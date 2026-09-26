@@ -1,0 +1,1026 @@
+
+
+// CONNECT TO REAL DYNAMODB
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, UpdateCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+
+const client = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(client);
+
+export const handler = async (event) => {
+    // Enable CORS for the API
+    const headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+    };
+
+    try {
+        const method = event.requestContext?.http?.method || event.httpMethod || '';
+
+        // 1. Handle CORS preflight request
+        if (method === 'OPTIONS') {
+            return { statusCode: 200, headers, body: '' };
+        }
+
+        // 2. Handle API Update from MAUI App or Admin Dashboard (POST)
+        if (method === 'POST') {
+            const body = JSON.parse(event.body || '{}');
+            const action = body.action;
+
+            if (action === 'addDriver') {
+                console.log(`Adding driver: ${body.name} (${body.phone})`);
+                
+                await docClient.send(new PutCommand({
+                    TableName: "DriversTable",
+                    Item: { phone: body.phone, name: body.name, status: "Active", deliveries: 0 }
+                }));
+                
+                return { statusCode: 200, headers, body: JSON.stringify({ message: 'Driver added!' }) };
+            } 
+            else if (action === 'addOrder') {
+                console.log(`Adding order for ${body.customerName} assigned to ${body.driverId}`);
+                const orderId = "ORD-" + Math.floor(Math.random() * 10000);
+                
+                await docClient.send(new PutCommand({
+                    TableName: "OrdersTable",
+                    Item: { 
+                        orderId: orderId, 
+                        customerName: body.customerName, 
+                        customerPhone: body.customerPhone, 
+                        address: body.address, 
+                        items: body.items,
+                        driverId: body.driverId,
+                        status: "Assigned"
+                    }
+                }));
+                
+                return { statusCode: 200, headers, body: JSON.stringify({ message: 'Order created!', orderId: orderId }) };
+            }
+            else if (action === 'getOrders' || action === 'getAssignedOrders') {
+                
+                const res = await docClient.send(new ScanCommand({ TableName: "OrdersTable" }));
+                let orders = res.Items || [];
+                if (action === 'getAssignedOrders' && body.driverPhone) {
+                    orders = orders.filter(o => o.driverId === body.driverPhone);
+                }
+                return { statusCode: 200, headers, body: JSON.stringify({ orders }) };
+                
+            }
+            else if (action === 'getDrivers') {
+                
+                const res = await docClient.send(new ScanCommand({ TableName: "DriversTable" }));
+                return { statusCode: 200, headers, body: JSON.stringify({ drivers: res.Items || [] }) };
+                
+            }
+            else {
+                // Default: Update order status from MAUI driver app
+                const { orderId, status, driverPhone } = body;
+                console.log(`Received update for Order: ${orderId} - Status: ${status} from Driver: ${driverPhone}`);
+
+                if (!orderId) {
+                    return { statusCode: 400, headers, body: JSON.stringify({ message: 'OrderId is required' }) };
+                }
+                
+                
+                await docClient.send(new UpdateCommand({
+                    TableName: "OrdersTable",
+                    Key: { orderId: orderId },
+                    UpdateExpression: "set #st = :s",
+                    ExpressionAttributeNames: { "#st": "status" },
+                    ExpressionAttributeValues: { ":s": status }
+                }));
+                
+                
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify({ message: 'Delivery recorded successfully!', orderId, status }),
+                };
+            }
+        }
+
+        // 3. Handle Admin Dashboard View (GET)
+        // If it's a GET request (opening the URL in a browser), serve the index.html
+        let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shunmugarai Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-icons-round { vertical-align: middle; font-size: inherit; }
+    </style>
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-indigo-800', 'text-white');
+                el.classList.add('text-indigo-100', 'hover:bg-indigo-600');
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).classList.add('bg-indigo-800', 'text-white');
+            document.getElementById('btn-' + tabId).classList.remove('text-indigo-100', 'hover:bg-indigo-600');
+        }
+
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('hidden');
+        }
+
+        // The URL of your AWS Lambda function
+        const API_URL = 'https://shvfrpgoe7hvwgcv57ua4edeku0kymaj.lambda-url.ap-south-1.on.aws/'; 
+
+        async function saveDriver() {
+            const name = document.getElementById('newDriverName').value;
+            const phone = document.getElementById('newDriverPhone').value;
+            if(!name || !phone) { alert("Please fill all fields"); return; }
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'addDriver', name, phone })
+                });
+                const data = await response.json();
+                if(response.ok) {
+                    alert('Driver added successfully!');
+                    toggleModal('addDriverModal');
+                    // Reload page to fetch new data
+                    location.reload(); 
+                } else {
+                    alert('Error: ' + (data.message || 'Unknown error'));
+                }
+            } catch(e) {
+                alert('Connection error: ' + e.message);
+            }
+        }
+
+        async function saveOrder() {
+            const customerName = document.getElementById('newOrderCustomer').value;
+            const customerPhone = document.getElementById('newOrderPhone').value;
+            const address = document.getElementById('newOrderAddress').value;
+            const items = document.getElementById('newOrderItems').value;
+            const driverId = document.getElementById('newOrderDriver').value;
+
+            if(!customerName || !customerPhone || !address || !items) { alert("Please fill all required fields"); return; }
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action: 'addOrder', 
+                        customerName, customerPhone, address, items, driverId 
+                    })
+                });
+                if(response.ok) {
+                    alert('Order created successfully!');
+                    toggleModal('newOrderModal');
+                    location.reload(); 
+                } else {
+                    const err = await response.text();
+                    alert('Failed to save order: ' + err);
+                }
+            } catch(e) {
+                alert('Network error: ' + e);
+            }
+        }
+        async function loadData() {
+            try {
+                // Fetch Orders
+                let resOrders = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getOrders' }) });
+                if(resOrders.ok) {
+                    let data = await resOrders.json();
+                    let html = '';
+                    (data.orders || []).forEach(o => {
+                        html += \`
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 font-bold text-indigo-600">\${o.orderId}</td>
+                            <td class="px-6 py-4">
+                                <div class="font-medium text-gray-900">\${o.customerName}</div>
+                                <div class="text-gray-500 text-xs">Ph: \${o.customerPhone}</div>
+                            </td>
+                            <td class="px-6 py-4">\${o.items}</td>
+                            <td class="px-6 py-4">\${o.driverId || 'Unassigned'}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-blue-100 text-blue-700">\${o.status}</span>
+                            </td>
+                            <td class="px-6 py-4 text-right space-x-2">
+                                <button class="text-gray-400 hover:text-indigo-600"><span class="material-icons-round">visibility</span></button>
+                            </td>
+                        </tr>\`;
+                    });
+                    document.getElementById('ordersTableBody').innerHTML = html;
+                    
+                    // Update stats
+                    let total = data.orders ? data.orders.length : 0;
+                    let delivered = data.orders ? data.orders.filter(o => o.status === 'Delivered').length : 0;
+                    let pending = total - delivered;
+                    
+                    document.getElementById('statTotal').innerText = total;
+                    document.getElementById('statDelivered').innerText = delivered;
+                    document.getElementById('statPending').innerText = pending;
+                }
+
+                // Fetch Drivers
+                let resDrivers = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getDrivers' }) });
+                if(resDrivers.ok) {
+                    let data = await resDrivers.json();
+                    let html = '';
+                    let selectHtml = '<option value="">Unassigned</option>';
+                    (data.drivers || []).forEach(d => {
+                        let initial = d.name ? d.name.charAt(0).toUpperCase() : 'D';
+                        html += \`
+                        <div class="border border-gray-200 rounded-xl p-5 hover:shadow-md transition">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">\${initial}</div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">\${d.name}</h3>
+                                    <p class="text-sm text-gray-500">\${d.phone}</p>
+                                </div>
+                            </div>
+                        </div>\`;
+                        selectHtml += \`<option value="\${d.phone}">\${d.name} - \${d.phone}</option>\`;
+                    });
+                    document.getElementById('driversGrid').innerHTML = html;
+                    document.getElementById('newOrderDriver').innerHTML = selectHtml;
+                }
+            } catch(e) {
+                console.log("Could not load data:", e);
+            }
+        }
+
+        window.onload = loadData;
+    </script>
+</head>
+<body class="bg-gray-100 font-sans h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-indigo-700 text-white flex flex-col hidden md:flex h-full shadow-xl">
+        <div class="p-6 border-b border-indigo-600">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <span class="material-icons-round">local_shipping</span> Admin
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <button id="btn-dashboard" onclick="switchTab('dashboard')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-800 text-white font-medium transition-colors">
+                <span class="material-icons-round">pie_chart</span> Dashboard
+            </button>
+            <button id="btn-orders" onclick="switchTab('orders')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-600 font-medium transition-colors">
+                <span class="material-icons-round">inventory_2</span> Orders
+            </button>
+            <button id="btn-drivers" onclick="switchTab('drivers')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-600 font-medium transition-colors">
+                <span class="material-icons-round">people</span> Drivers
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-y-auto">
+        <!-- Top Header -->
+        <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-gray-800">Shunmugarai Deliveries Overview</h2>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-500">Welcome, Admin</span>
+                <div class="h-8 w-8 bg-indigo-600 rounded-full flex justify-center items-center text-white font-bold">A</div>
+            </div>
+        </header>
+
+        <div class="p-8">
+            <!-- DASHBOARD TAB -->
+            <div id="dashboard" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-indigo-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-semibold uppercase">Total Orders</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">124</p>
+                            </div>
+                            <div class="p-3 bg-indigo-100 rounded-lg text-indigo-600">
+                                <span class="material-icons-round">inventory_2</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-semibold uppercase">Delivered</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">98</p>
+                            </div>
+                            <div class="p-3 bg-green-100 rounded-lg text-green-600">
+                                <span class="material-icons-round text-xl">check_circle</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-yellow-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-semibold uppercase">Pending</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">26</p>
+                            </div>
+                            <div class="p-3 bg-yellow-100 rounded-lg text-yellow-600">
+                                <span class="material-icons-round text-xl">schedule</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                    <div class="flex gap-4">
+                        <button onclick="switchTab('orders'); toggleModal('newOrderModal')" class="bg-indigo-600 text-white px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition">
+                            <span class="material-icons-round">add</span> Create New Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORDERS TAB -->
+            <div id="orders" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+                    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h2 class="text-xl font-semibold text-gray-800">Manage Orders</h2>
+                        <button onclick="toggleModal('newOrderModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                            <span class="material-icons-round">add</span> New Order
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wider">
+                                    <th class="px-6 py-4 font-semibold">Order ID</th>
+                                    <th class="px-6 py-4 font-semibold">Customer</th>
+                                    <th class="px-6 py-4 font-semibold">Items</th>
+                                    <th class="px-6 py-4 font-semibold">Driver</th>
+                                    <th class="px-6 py-4 font-semibold">Status</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody" class="divide-y divide-gray-100 text-sm text-gray-700 bg-white">
+                                <!-- Data will be loaded dynamically here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DRIVERS TAB -->
+            <div id="drivers" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h2 class="text-xl font-semibold text-gray-800">Driver List</h2>
+                        <button onclick="toggleModal('addDriverModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                            <span class="material-icons-round">person_add</span> Add Driver
+                        </button>
+                    </div>
+                    
+                    <div id="driversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                        <!-- Driver cards will be loaded here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- NEW ORDER MODAL -->
+    <div id="newOrderModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-indigo-50">
+                <h3 class="text-lg font-bold text-gray-800">Create New Order</h3>
+                <button onclick="toggleModal('newOrderModal')" class="text-gray-400 hover:text-gray-600">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                    <input type="text" id="newOrderCustomer" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Enter customer name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer Phone</label>
+                    <input type="text" id="newOrderPhone" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. 9876543210">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+                    <textarea id="newOrderAddress" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" rows="2" placeholder="Full address"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Items to Deliver</label>
+                    <input type="text" id="newOrderItems" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. 2x Grocery Bags">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Assign Driver</label>
+                    <select id="newOrderDriver" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                        <option>Unassigned</option>
+                        <option>Raju - 9876543210</option>
+                        <option>Muthu - 8765432109</option>
+                    </select>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="toggleModal('newOrderModal')" class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">Cancel</button>
+                <button onclick="saveOrder()" class="px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700 rounded-lg shadow transition">Save Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REASSIGN DRIVER MODAL -->
+    <div id="reassignModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800">Reassign Order ORD-1043</h3>
+                <button onclick="toggleModal('reassignModal')" class="text-gray-400 hover:text-gray-600">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="p-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select New Driver</label>
+                <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white mb-4">
+                    <option>Raju (Available)</option>
+                    <option selected>Muthu (Current)</option>
+                </select>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="toggleModal('reassignModal')" class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">Cancel</button>
+                <button onclick="toggleModal('reassignModal')" class="px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700 rounded-lg shadow transition">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD DRIVER MODAL -->
+    <div id="addDriverModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-indigo-50">
+                <h3 class="text-lg font-bold text-gray-800">Add New Driver</h3>
+                <button onclick="toggleModal('addDriverModal')" class="text-gray-400 hover:text-gray-600">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Driver Name</label>
+                    <input type="text" id="newDriverName" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Enter driver name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" id="newDriverPhone" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. 9876543210">
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="toggleModal('addDriverModal')" class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">Cancel</button>
+                <button onclick="saveDriver()" class="px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700 rounded-lg shadow transition">Save Driver</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+`;
+                    });
+                    document.getElementById('ordersTableBody').innerHTML = html;
+                    
+                    // Update stats
+                    let total = data.orders ? data.orders.length : 0;
+                    let delivered = data.orders ? data.orders.filter(o => o.status === 'Delivered').length : 0;
+                    let pending = total - delivered;
+                    
+                    document.getElementById('statTotal').innerText = total;
+                    document.getElementById('statDelivered').innerText = delivered;
+                    document.getElementById('statPending').innerText = pending;
+                }
+
+                // Fetch Drivers
+                let resDrivers = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getDrivers' }) });
+                if(resDrivers.ok) {
+                    let data = await resDrivers.json();
+                    let html = '';
+                    let selectHtml = '<option value="">Unassigned</option>';
+                    (data.drivers || []).forEach(d => {
+                        let initial = d.name ? d.name.charAt(0).toUpperCase() : 'D';
+                        html += \`
+                        <div class="border border-gray-200 rounded-xl p-5 hover:shadow-md transition">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">\${initial}</div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">\${d.name}</h3>
+                                    <p class="text-sm text-gray-500">\${d.phone}</p>
+                                </div>
+                            </div>
+                        </div>\`;
+                        selectHtml += \`<option value="\${d.phone}">\${d.name} - \${d.phone}</option>\`;
+                    });
+                    document.getElementById('driversGrid').innerHTML = html;
+                    document.getElementById('newOrderDriver').innerHTML = selectHtml;
+                }
+            } catch(e) {
+                console.log("Could not load data:", e);
+            }
+        }
+
+        window.onload = loadData;
+    </script>
+</head>
+<body class="bg-gray-100 font-sans h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-indigo-700 text-white flex flex-col hidden md:flex h-full shadow-xl">
+        <div class="p-6 border-b border-indigo-600">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <span class="material-icons-round">local_shipping</span> Admin
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <button id="btn-dashboard" onclick="switchTab('dashboard')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-800 text-white font-medium transition-colors">
+                <span class="material-icons-round">pie_chart</span> Dashboard
+            </button>
+            <button id="btn-orders" onclick="switchTab('orders')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-600 font-medium transition-colors">
+                <span class="material-icons-round">inventory_2</span> Orders
+            </button>
+            <button id="btn-drivers" onclick="switchTab('drivers')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-600 font-medium transition-colors">
+                <span class="material-icons-round">people</span> Drivers
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-y-auto">
+        <!-- Top Header -->
+        <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-gray-800">Shunmugarai Deliveries Overview</h2>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-500">Welcome, Admin</span>
+                <div class="h-8 w-8 bg-indigo-600 rounded-full flex justify-center items-center text-white font-bold">A</div>
+            </div>
+        </header>
+
+        <div class="p-8">
+            <!-- DASHBOARD TAB -->
+            <div id="dashboard" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-indigo-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-semibold uppercase">Total Orders</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">124</p>
+                            </div>
+                            <div class="p-3 bg-indigo-100 rounded-lg text-indigo-600">
+                                <span class="material-icons-round">inventory_2</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-semibold uppercase">Delivered</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">98</p>
+                            </div>
+                            <div class="p-3 bg-green-100 rounded-lg text-green-600">
+                                <i class="fa-solid fa-check-circle text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-yellow-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-semibold uppercase">Pending</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">26</p>
+                            </div>
+                            <div class="p-3 bg-yellow-100 rounded-lg text-yellow-600">
+                                <i class="fa-solid fa-clock text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                    <div class="flex gap-4">
+                        <button onclick="switchTab('orders'); toggleModal('newOrderModal')" class="bg-indigo-600 text-white px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition">
+                            <span class="material-icons-round">add</span> Create New Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORDERS TAB -->
+            <div id="orders" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+                    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h2 class="text-xl font-semibold text-gray-800">Manage Orders</h2>
+                        <button onclick="toggleModal('newOrderModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                            <span class="material-icons-round">add</span> New Order
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wider">
+                                    <th class="px-6 py-4 font-semibold">Order ID</th>
+                                    <th class="px-6 py-4 font-semibold">Customer</th>
+                                    <th class="px-6 py-4 font-semibold">Items</th>
+                                    <th class="px-6 py-4 font-semibold">Driver</th>
+                                    <th class="px-6 py-4 font-semibold">Status</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody" class="divide-y divide-gray-100 text-sm text-gray-700 bg-white">
+                                <!-- Data will be loaded dynamically here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DRIVERS TAB -->
+            <div id="drivers" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h2 class="text-xl font-semibold text-gray-800">Driver List</h2>
+                        <button onclick="toggleModal('addDriverModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                            <span class="material-icons-round">person_add</span> Add Driver
+                        </button>
+                    </div>
+                    
+                    <div id="driversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                        <!-- Driver cards will be loaded here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- NEW ORDER MODAL -->
+    <div id="newOrderModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-indigo-50">
+                <h3 class="text-lg font-bold text-gray-800">Create New Order</h3>
+                <button onclick="toggleModal('newOrderModal')" class="text-gray-400 hover:text-gray-600">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                    <input type="text" id="newOrderCustomer" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Enter customer name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer Phone</label>
+                    <input type="text" id="newOrderPhone" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. 9876543210">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+                    <textarea id="newOrderAddress" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" rows="2" placeholder="Full address"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Items to Deliver</label>
+                    <input type="text" id="newOrderItems" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. 2x Grocery Bags">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Assign Driver</label>
+                    <select id="newOrderDriver" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                        <option>Unassigned</option>
+                        <option>Raju - 9876543210</option>
+                        <option>Muthu - 8765432109</option>
+                    </select>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="toggleModal('newOrderModal')" class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">Cancel</button>
+                <button onclick="saveOrder()" class="px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700 rounded-lg shadow transition">Save Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REASSIGN DRIVER MODAL -->
+    <div id="reassignModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800">Reassign Order ORD-1043</h3>
+                <button onclick="toggleModal('reassignModal')" class="text-gray-400 hover:text-gray-600">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="p-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select New Driver</label>
+                <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white mb-4">
+                    <option>Raju (Available)</option>
+                    <option selected>Muthu (Current)</option>
+                </select>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="toggleModal('reassignModal')" class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">Cancel</button>
+                <button onclick="toggleModal('reassignModal')" class="px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700 rounded-lg shadow transition">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD DRIVER MODAL -->
+    <div id="addDriverModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-indigo-50">
+                <h3 class="text-lg font-bold text-gray-800">Add New Driver</h3>
+                <button onclick="toggleModal('addDriverModal')" class="text-gray-400 hover:text-gray-600">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Driver Name</label>
+                    <input type="text" id="newDriverName" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Enter driver name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" id="newDriverPhone" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. 9876543210">
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="toggleModal('addDriverModal')" class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">Cancel</button>
+                <button onclick="saveDriver()" class="px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700 rounded-lg shadow transition">Save Driver</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+`;
+                    });
+                    document.getElementById('ordersTableBody').innerHTML = html;
+                }
+
+                // Fetch Drivers
+                let resDrivers = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'getDrivers' }) });
+                if(resDrivers.ok) {
+                    let data = await resDrivers.json();
+                    let html = '';
+                    let selectHtml = '<option value="">Unassigned</option>';
+                    (data.drivers || []).forEach(d => {
+                        let initial = d.name ? d.name.charAt(0).toUpperCase() : 'D';
+                        html += \`
+                        <div class="border border-gray-200 rounded-xl p-5 hover:shadow-md transition">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold">\${initial}</div>
+                                <div>
+                                    <h3 class="font-bold text-gray-900">\${d.name}</h3>
+                                    <p class="text-sm text-gray-500">\${d.phone}</p>
+                                </div>
+                            </div>
+                        </div>\`;
+                        selectHtml += \`<option value="\${d.phone}">\${d.name} - \${d.phone}</option>\`;
+                    });
+                    document.getElementById('driversGrid').innerHTML = html;
+                    document.getElementById('newOrderDriver').innerHTML = selectHtml;
+                }
+            } catch(e) {
+                console.log("Could not load data:", e);
+            }
+        }
+
+        window.onload = loadData;
+    </script>
+</head>
+<body class="bg-gray-100 font-sans h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-indigo-700 text-white flex flex-col hidden md:flex h-full shadow-xl">
+        <div class="p-6 border-b border-indigo-600">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <i class="fa-solid fa-truck-fast"></i> Admin
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <button id="btn-dashboard" onclick="switchTab('dashboard')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-indigo-800 text-white font-medium transition-colors">
+                <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+            </button>
+            <button id="btn-orders" onclick="switchTab('orders')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-600 font-medium transition-colors">
+                <i class="fa-solid fa-box-open w-5"></i> Orders
+            </button>
+            <button id="btn-drivers" onclick="switchTab('drivers')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-indigo-100 hover:bg-indigo-600 font-medium transition-colors">
+                <i class="fa-solid fa-users w-5"></i> Drivers
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-y-auto">
+        <!-- Top Header -->
+        <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-gray-800">Shunmugarai Deliveries Overview</h2>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-500">Welcome, Admin</span>
+                <div class="h-8 w-8 bg-indigo-600 rounded-full flex justify-center items-center text-white font-bold">A</div>
+            </div>
+        </header>
+
+        <div class="p-8">
+            <!-- DASHBOARD TAB -->
+            <div id="dashboard" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-indigo-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-semibold uppercase">Total Orders</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">124</p>
+                            </div>
+                            <div class="p-3 bg-indigo-100 rounded-lg text-indigo-600">
+                                <i class="fa-solid fa-boxes-stacked text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-semibold uppercase">Delivered</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">98</p>
+                            </div>
+                            <div class="p-3 bg-green-100 rounded-lg text-green-600">
+                                <i class="fa-solid fa-check-circle text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-yellow-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-gray-500 text-sm font-semibold uppercase">Pending</h3>
+                                <p class="text-3xl font-bold text-gray-800 mt-1">26</p>
+                            </div>
+                            <div class="p-3 bg-yellow-100 rounded-lg text-yellow-600">
+                                <i class="fa-solid fa-clock text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                    <div class="flex gap-4">
+                        <button onclick="switchTab('orders'); toggleModal('newOrderModal')" class="bg-indigo-600 text-white px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition">
+                            <i class="fa-solid fa-plus mr-2"></i> Create New Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORDERS TAB -->
+            <div id="orders" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+                    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h2 class="text-xl font-semibold text-gray-800">Manage Orders</h2>
+                        <button onclick="toggleModal('newOrderModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                            <i class="fa-solid fa-plus mr-1"></i> New Order
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wider">
+                                    <th class="px-6 py-4 font-semibold">Order ID</th>
+                                    <th class="px-6 py-4 font-semibold">Customer</th>
+                                    <th class="px-6 py-4 font-semibold">Items</th>
+                                    <th class="px-6 py-4 font-semibold">Driver</th>
+                                    <th class="px-6 py-4 font-semibold">Status</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody" class="divide-y divide-gray-100 text-sm text-gray-700 bg-white">
+                                <!-- Data will be loaded dynamically here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DRIVERS TAB -->
+            <div id="drivers" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h2 class="text-xl font-semibold text-gray-800">Driver List</h2>
+                        <button onclick="toggleModal('addDriverModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                            <i class="fa-solid fa-user-plus mr-1"></i> Add Driver
+                        </button>
+                    </div>
+                    
+                    <div id="driversGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                        <!-- Driver cards will be loaded here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- NEW ORDER MODAL -->
+    <div id="newOrderModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-indigo-50">
+                <h3 class="text-lg font-bold text-gray-800">Create New Order</h3>
+                <button onclick="toggleModal('newOrderModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                    <input type="text" id="newOrderCustomer" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Enter customer name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer Phone</label>
+                    <input type="text" id="newOrderPhone" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. 9876543210">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+                    <textarea id="newOrderAddress" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" rows="2" placeholder="Full address"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Items to Deliver</label>
+                    <input type="text" id="newOrderItems" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. 2x Grocery Bags">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Assign Driver</label>
+                    <select id="newOrderDriver" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                        <option>Unassigned</option>
+                        <option>Raju - 9876543210</option>
+                        <option>Muthu - 8765432109</option>
+                    </select>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="toggleModal('newOrderModal')" class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">Cancel</button>
+                <button onclick="saveOrder()" class="px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700 rounded-lg shadow transition">Save Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REASSIGN DRIVER MODAL -->
+    <div id="reassignModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800">Reassign Order ORD-1043</h3>
+                <button onclick="toggleModal('reassignModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select New Driver</label>
+                <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white mb-4">
+                    <option>Raju (Available)</option>
+                    <option selected>Muthu (Current)</option>
+                </select>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="toggleModal('reassignModal')" class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">Cancel</button>
+                <button onclick="toggleModal('reassignModal')" class="px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700 rounded-lg shadow transition">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD DRIVER MODAL -->
+    <div id="addDriverModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-indigo-50">
+                <h3 class="text-lg font-bold text-gray-800">Add New Driver</h3>
+                <button onclick="toggleModal('addDriverModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Driver Name</label>
+                    <input type="text" id="newDriverName" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Enter driver name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" id="newDriverPhone" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g. 9876543210">
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="toggleModal('addDriverModal')" class="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition">Cancel</button>
+                <button onclick="saveDriver()" class="px-4 py-2 bg-indigo-600 text-white font-medium hover:bg-indigo-700 rounded-lg shadow transition">Save Driver</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+`;
+
+        return {
+            statusCode: 200,
+            headers: {
+                'Content-Type': 'text/html',
+                ...headers
+            },
+            body: html,
+        };
+        
+    } catch (error) {
+        console.error("Error:", error);
+        return { statusCode: 500, headers, body: JSON.stringify({ message: error.message || 'Internal Server Error', stack: error.stack }) };
+    }
+};

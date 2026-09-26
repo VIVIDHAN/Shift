@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DeliveryApp.Views.DashboardPage"
+             xmlns:models="clr-namespace:DeliveryApp.Models"
+             Title="My Routes"
+             BackgroundColor="#F3F4F6">
+             
+    <Grid RowDefinitions="Auto,*">
+        <VerticalStackLayout Padding="20,20,20,20" BackgroundColor="#1E3A8A" Grid.Row="0">
+            <Label Text="Today's Deliveries" TextColor="White" FontSize="26" FontAttributes="Bold"/>
+            <Label Text="Complete your routes safely" TextColor="#BFDBFE" FontSize="15" Margin="0,5,0,0"/>
+        </VerticalStackLayout>
+
+        <CollectionView x:Name="OrdersCollection" Grid.Row="1" Margin="15,0,15,15">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Order">
+                    <Frame Margin="0,8" Padding="0" CornerRadius="15" HasShadow="True" BorderColor="Transparent" BackgroundColor="White">
+                        <Grid RowDefinitions="Auto,Auto,Auto" Padding="20">
+                            
+                            <!-- Header -->
+                            <Grid ColumnDefinitions="*,Auto" Grid.Row="0" Margin="0,0,0,15">
+                                <Label Text="{Binding OrderId, StringFormat='#{0}'}" FontAttributes="Bold" FontSize="18" TextColor="#111827" Grid.Column="0"/>
+                                <Frame Grid.Column="1" BackgroundColor="#FEF3C7" CornerRadius="8" Padding="8,4" HasShadow="False" BorderColor="Transparent">
+                                    <Label Text="Assigned" TextColor="#D97706" FontSize="12" FontAttributes="Bold"/>
+                                </Frame>
+                            </Grid>
+                            
+                            <!-- Details -->
+                            <VerticalStackLayout Grid.Row="1" Spacing="12">
+                                <Grid ColumnDefinitions="30,*">
+                                    <Label Text="&#xe7fd;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="16" Grid.Column="0" VerticalOptions="Center"/>
+                                    <Label Text="{Binding CustomerName}" FontSize="15" TextColor="#4B5563" Grid.Column="1" VerticalOptions="Center"/>
+                                </Grid>
+                                
+                                <Grid ColumnDefinitions="30,*">
+                                    <Label Text="&#xe1a1;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="16" Grid.Column="0" VerticalOptions="Center"/>
+                                    <Label Text="{Binding Items}" FontSize="15" TextColor="#4B5563" Grid.Column="1" VerticalOptions="Center"/>
+                                </Grid>
+                                
+                                <Grid ColumnDefinitions="30,*">
+                                    <Label Text="&#xe0c8;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="16" Grid.Column="0" VerticalOptions="Center"/>
+                                    <Label Text="{Binding Location}" FontSize="15" TextColor="#4B5563" Grid.Column="1" VerticalOptions="Center"/>
+                                </Grid>
+                            </VerticalStackLayout>
+                            
+                            <!-- Action -->
+                            <Button Grid.Row="2" 
+                                    Text="Navigate &amp; Deliver" 
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=ReachedLocationCommand}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#1E3A8A"
+                                    TextColor="White"
+                                    FontAttributes="Bold"
+                                    CornerRadius="10"
+                                    HeightRequest="50"
+                                    Margin="0,20,0,0"/>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

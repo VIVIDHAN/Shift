@@ -1,0 +1,12 @@
+# .NET Core
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userprefs
+*.dbmdl
+*.jfm
+
+# Mac
+.DS_Store

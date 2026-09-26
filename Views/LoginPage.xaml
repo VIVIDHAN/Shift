@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DeliveryApp.Views.LoginPage"
+             BackgroundColor="#F3F4F6">
+    <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
+    
+    <Grid>
+        <!-- Background decoration -->
+        <BoxView Color="#1E3A8A" HeightRequest="300" VerticalOptions="Start" />
+        
+        <VerticalStackLayout Spacing="30" Padding="30" VerticalOptions="Center">
+            
+            <Label Text="&#xe558;" FontFamily="MaterialIcons" TextColor="White" FontSize="80" HorizontalOptions="Center" Margin="0,0,0,10"/>
+            
+            <Frame BackgroundColor="White" CornerRadius="20" Padding="30" HasShadow="True" BorderColor="Transparent">
+                <VerticalStackLayout Spacing="25">
+                    <Label Text="Driver Portal" 
+                           FontSize="28" 
+                           TextColor="#111827"
+                           HorizontalOptions="Center" 
+                           FontAttributes="Bold"/>
+                           
+                    <Label Text="Sign in to view your assigned routes" 
+                           FontSize="15" 
+                           TextColor="#6B7280"
+                           HorizontalOptions="Center"/>
+
+                    <Frame BorderColor="#D1D5DB" CornerRadius="10" Padding="0" HasShadow="False" BackgroundColor="#F9FAFB">
+                        <Entry x:Name="PhoneEntry"
+                               Placeholder="Phone Number"
+                               Keyboard="Telephone"
+                               FontSize="18"
+                               TextColor="#111827"
+                               PlaceholderColor="#9CA3AF"
+                               HorizontalTextAlignment="Center"
+                               HeightRequest="55"/>
+                    </Frame>
+
+                    <Button Text="Sign In"
+                            Clicked="OnLoginClicked"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            BackgroundColor="#1E3A8A"
+                            TextColor="White"
+                            CornerRadius="10"
+                            HeightRequest="55"
+                            Margin="0,10,0,0"/>
+                </VerticalStackLayout>
+            </Frame>
+            
+            <Label Text="Shunmugarai Logistics" 
+                   FontSize="14" 
+                   TextColor="#9CA3AF"
+                   HorizontalOptions="Center"
+                   Margin="0,20,0,0"/>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>
