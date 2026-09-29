@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Limit Java Heap size for Android builds to save RAM on 8GB Mac -->
+    <JavaMaximumHeapSize>2G</JavaMaximumHeapSize>
+    <!-- Disable parallel builds to prevent CPU thermal throttling -->
+    <BuildInParallel>false</BuildInParallel>
+  </PropertyGroup>
+</Project>

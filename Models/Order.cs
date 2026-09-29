@@ -11,4 +11,10 @@ namespace DeliveryApp.Models
         public DateTime OrderDate { get; set; }
         public string Status { get; set; } // "Assigned", "Delivered"
     }
+
+    public class ShopSettings
+    {
+        public string ShopOwnerPhone { get; set; }
+        public string SmsTemplate { get; set; }
+    }
 }

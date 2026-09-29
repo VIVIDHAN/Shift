@@ -29,33 +29,16 @@ public partial class DashboardPage : ContentPage
     {
         try
         {
-            // Connect to live AWS Lambda endpoint
-            HttpClient client = new HttpClient();
-            // Since lambda doesn't return JSON on GET by default now, we send a POST with an action
-            var payload = new { action = "getAssignedOrders", driverPhone = Preferences.Get("DriverPhone", "") };
-            string jsonPayload = System.Text.Json.JsonSerializer.Serialize(payload);
-            var content = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("https://shvfrpgoe7hvwgcv57ua4edeku0kymaj.lambda-url.ap-south-1.on.aws/", content);
+            var apiService = new Services.ApiService();
+            var fetchedOrders = await apiService.GetAssignedOrdersAsync(Preferences.Get("DriverPhone", ""));
             
-            if (response.IsSuccessStatusCode)
+            Orders.Clear();
+            if (fetchedOrders != null && fetchedOrders.Count > 0)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var fetchedOrders = System.Text.Json.JsonSerializer.Deserialize<List<Order>>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                
-                Orders.Clear();
-                if (fetchedOrders != null)
+                foreach (var order in fetchedOrders)
                 {
-                    foreach (var order in fetchedOrders)
-                    {
-                        Orders.Add(order);
-                    }
+                    Orders.Add(order);
                 }
-            }
-            else 
-            {
-                // API not returning JSON yet (e.g. database not hooked up)
-                Orders.Clear();
             }
         }
         catch (Exception ex)

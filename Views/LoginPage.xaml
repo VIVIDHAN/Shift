@@ -2,58 +2,84 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="DeliveryApp.Views.LoginPage"
+             NavigationPage.HasNavigationBar="False"
              BackgroundColor="#F3F4F6">
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
     
-    <Grid>
-        <!-- Background decoration -->
-        <BoxView Color="#1E3A8A" HeightRequest="300" VerticalOptions="Start" />
-        
-        <VerticalStackLayout Spacing="30" Padding="30" VerticalOptions="Center">
+    <Grid BackgroundColor="#F3F4F6">
+        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="25" Padding="20">
             
-            <Label Text="&#xe558;" FontFamily="MaterialIcons" TextColor="White" FontSize="80" HorizontalOptions="Center" Margin="0,0,0,10"/>
+            <!-- Logo Section -->
+            <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
+                <Label Text="&#xe558;" FontFamily="MaterialIcons" TextColor="#1E3A8A" FontSize="80" HorizontalOptions="Center"/>
+                <Label Text="SHUNMUGARAI" TextColor="#1E3A8A" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center" CharacterSpacing="2"/>
+                <Label Text="LOGISTICS" TextColor="#3B82F6" FontSize="14" FontAttributes="Bold" HorizontalOptions="Center" CharacterSpacing="4"/>
+            </VerticalStackLayout>
             
-            <Frame BackgroundColor="White" CornerRadius="20" Padding="30" HasShadow="True" BorderColor="Transparent">
+            <!-- Login Card -->
+            <Frame BackgroundColor="White" 
+                   CornerRadius="25" 
+                   Padding="25,35,25,35" 
+                   HasShadow="True" 
+                   BorderColor="Transparent"
+                   WidthRequest="340">
+                   
                 <VerticalStackLayout Spacing="25">
-                    <Label Text="Driver Portal" 
-                           FontSize="28" 
+                    <Label Text="Driver Login" 
+                           FontSize="24" 
                            TextColor="#111827"
                            HorizontalOptions="Center" 
                            FontAttributes="Bold"/>
                            
-                    <Label Text="Sign in to view your assigned routes" 
-                           FontSize="15" 
+                    <Label Text="Enter your phone number to start" 
+                           FontSize="14" 
                            TextColor="#6B7280"
-                           HorizontalOptions="Center"/>
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"/>
 
-                    <Frame BorderColor="#D1D5DB" CornerRadius="10" Padding="0" HasShadow="False" BackgroundColor="#F9FAFB">
-                        <Entry x:Name="PhoneEntry"
-                               Placeholder="Phone Number"
-                               Keyboard="Telephone"
-                               FontSize="18"
-                               TextColor="#111827"
-                               PlaceholderColor="#9CA3AF"
-                               HorizontalTextAlignment="Center"
-                               HeightRequest="55"/>
+                    <!-- Phone Number Input -->
+                    <Frame BorderColor="#E5E7EB" CornerRadius="12" Padding="5,0,5,0" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="60">
+                        <Grid ColumnDefinitions="50,*">
+                            <Label Text="&#xe0cd;" FontFamily="MaterialIcons" TextColor="#9CA3AF" FontSize="24" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="0"/>
+                            <Entry x:Name="PhoneEntry"
+                                   Placeholder="Phone Number"
+                                   Keyboard="Telephone"
+                                   FontSize="18"
+                                   TextColor="#111827"
+                                   PlaceholderColor="#9CA3AF"
+                                   Grid.Column="1"
+                                   VerticalOptions="Center"/>
+                        </Grid>
                     </Frame>
 
-                    <Button Text="Sign In"
+                    <!-- Password Input -->
+                    <Frame BorderColor="#E5E7EB" CornerRadius="12" Padding="5,0,5,0" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="60">
+                        <Grid ColumnDefinitions="50,*">
+                            <Label Text="&#xe897;" FontFamily="MaterialIcons" TextColor="#9CA3AF" FontSize="24" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="0"/>
+                            <Entry x:Name="PasswordEntry"
+                                   Placeholder="Password"
+                                   IsPassword="True"
+                                   FontSize="18"
+                                   TextColor="#111827"
+                                   PlaceholderColor="#9CA3AF"
+                                   Grid.Column="1"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </Frame>
+
+                    <!-- Login Button -->
+                    <Button Text="Start Shift"
                             Clicked="OnLoginClicked"
                             FontSize="18"
                             FontAttributes="Bold"
-                            BackgroundColor="#1E3A8A"
+                            BackgroundColor="#10B981"
                             TextColor="White"
-                            CornerRadius="10"
-                            HeightRequest="55"
+                            CornerRadius="12"
+                            HeightRequest="60"
                             Margin="0,10,0,0"/>
                 </VerticalStackLayout>
             </Frame>
             
-            <Label Text="Shunmugarai Logistics" 
-                   FontSize="14" 
-                   TextColor="#9CA3AF"
-                   HorizontalOptions="Center"
-                   Margin="0,20,0,0"/>
         </VerticalStackLayout>
     </Grid>
 </ContentPage>

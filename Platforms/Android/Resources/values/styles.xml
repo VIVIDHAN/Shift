@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+  <style name="Maui.MainTheme.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <item name="android:windowLightStatusBar">true</item>
+    <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+  </style>
+</resources>

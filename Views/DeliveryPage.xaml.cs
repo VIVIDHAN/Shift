@@ -58,38 +58,87 @@ public partial class DeliveryPage : ContentPage
 
         try
         {
-            // 1. Request SMS Permission and Trigger SMS in background
-            var status = await Permissions.CheckStatusAsync<Permissions.Sms>();
-            if (status != PermissionStatus.Granted)
+            // 1. Update Database via our new Local API
+            var apiService = new ApiService();
+            string driverPhone = Preferences.Get("DriverPhone", "Unknown");
+            bool dbSuccess = await apiService.CompleteDeliveryAsync(_currentOrder.OrderId, driverPhone);
+            
+            if (!dbSuccess)
             {
-                status = await Permissions.RequestAsync<Permissions.Sms>();
-            }
-
-            if (status == PermissionStatus.Granted)
-            {
-                var smsService = DependencyService.Get<ISmsService>();
-                if (smsService != null)
-                {
-                    string englishMsg = $"Order {_currentOrder.OrderId} has been successfully delivered. Items: {_currentOrder.Items}.";
-                    string tamilMsg = $"ஆர்டர் {_currentOrder.OrderId} வெற்றிகரமாக வழங்கப்பட்டது. பொருட்கள்: {_currentOrder.Items}.";
-                    string finalMsg = $"{englishMsg}\n{tamilMsg}";
-
-                    smsService.SendSmsInBackground(_currentOrder.CustomerPhone, finalMsg);
-                    smsService.SendSmsInBackground(_currentOrder.ShopOwnerPhone, finalMsg);
-                }
-            }
-            else
-            {
-                await DisplayAlert("Permission Denied", "SMS permission is required to send delivery confirmation.", "OK");
+                await DisplayAlert("Error", "Failed to update database. Please try again.", "OK");
                 return;
             }
 
-            // 2. Mock Database Update via AWS Lambda API
-            await UpdateDatabaseMockAsync();
+            // 2. Fetch SMS Template
+            var settings = await apiService.GetSettingsAsync();
+            string finalMsg = "";
+            if (settings != null && !string.IsNullOrEmpty(settings.SmsTemplate))
+            {
+                finalMsg = settings.SmsTemplate
+                    .Replace("{OrderId}", _currentOrder.OrderId)
+                    .Replace("{CustomerName}", _currentOrder.CustomerName)
+                    .Replace("{Items}", _currentOrder.Items);
+            }
+            else
+            {
+                // Fallback template
+                string englishMsg = $"Order {_currentOrder.OrderId} has been successfully delivered. Items: {_currentOrder.Items}.";
+                string tamilMsg = $"ஆர்டர் {_currentOrder.OrderId} வெற்றிகரமாக வழங்கப்பட்டது. பொருட்கள்: {_currentOrder.Items}.";
+                finalMsg = $"{englishMsg}\n{tamilMsg}";
+            }
 
-            await DisplayAlert("Success", "Delivery submitted and SMS sent successfully!", "OK");
+            var recipients = new List<string> { _currentOrder.CustomerPhone, _currentOrder.ShopOwnerPhone };
+
+            bool shouldSend = await DisplayAlert("Notify Customer", "Do you want to send a delivery confirmation SMS to the customer and shop owner?", "Yes, Send", "No, Skip");
+
+            if (shouldSend)
+            {
+#if ANDROID
+                // Send SMS directly on Android
+                try
+                {
+                    var status = await Permissions.CheckStatusAsync<Permissions.Sms>();
+                    if (status != PermissionStatus.Granted)
+                    {
+                        status = await Permissions.RequestAsync<Permissions.Sms>();
+                    }
+                    
+                    if (status == PermissionStatus.Granted)
+                    {
+                        var smsManager = Android.Telephony.SmsManager.Default;
+                        foreach (var number in recipients)
+                        {
+                            if (!string.IsNullOrEmpty(number))
+                            {
+                                smsManager.SendTextMessage(number, null, finalMsg, null, null);
+                            }
+                        }
+                        await DisplayAlert("Sent", "SMS sent successfully in the background.", "OK");
+                    }
+                    else
+                    {
+                        // Fallback if permission denied
+                        await Sms.Default.ComposeAsync(new SmsMessage(finalMsg, recipients));
+                    }
+                }
+                catch (Exception smsEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Direct SMS Failed: {smsEx.Message}");
+                    await Sms.Default.ComposeAsync(new SmsMessage(finalMsg, recipients));
+                }
+#else
+                await Sms.Default.ComposeAsync(new SmsMessage(finalMsg, recipients));
+#endif
+            }
+
+            await DisplayAlert("Success", "Delivery marked as complete!", "OK");
             
             // Navigate back to Dashboard
+            await Navigation.PopAsync();
+        }
+        catch (FeatureNotSupportedException)
+        {
+            await DisplayAlert("SMS Error", "SMS is not supported on this device (Emulator). Database was updated successfully.", "OK");
             await Navigation.PopAsync();
         }
         catch (Exception ex)
@@ -100,38 +149,6 @@ public partial class DeliveryPage : ContentPage
         {
             LoadingIndicator.IsVisible = false;
             LoadingIndicator.IsRunning = false;
-        }
-    }
-
-    private async Task UpdateDatabaseMockAsync()
-    {
-        try
-        {
-            var payload = new 
-            {
-                orderId = _currentOrder.OrderId,
-                status = "Delivered",
-                driverPhone = Preferences.Get("DriverPhone", "Unknown")
-            };
-
-            string jsonPayload = System.Text.Json.JsonSerializer.Serialize(payload);
-            var content = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json");
-            
-            HttpClient client = new HttpClient();
-            var response = await client.PostAsync("https://shvfrpgoe7hvwgcv57ua4edeku0kymaj.lambda-url.ap-south-1.on.aws/", content);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                System.Diagnostics.Debug.WriteLine("Successfully updated backend database.");
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($"Failed to update backend: {response.StatusCode}");
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Backend error: {ex.Message}");
         }
     }
 }
