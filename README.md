@@ -3,7 +3,7 @@
 A sleek, minimal .NET MAUI mobile app designed for delivery drivers to efficiently track stops, manage their daily shift routes, and monitor earnings on the go.
 
 ## Features
-- **Cross-Platform:** Built with .NET MAUI (runs on Android & iOS).
+- **Cross-Platform:** Built with .NET MAUI (runs on Android).
 - **Dashboard:** At-a-glance view of daily earnings and completed stops.
 - **Route Tracking:** Step-by-step navigation list for daily deliveries.
 - **Modern UI:** Clean, distraction-free interface using Google Material Icons.
