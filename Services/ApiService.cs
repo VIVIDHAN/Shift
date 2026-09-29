@@ -10,15 +10,8 @@ namespace DeliveryApp.Services
 {
     public class ApiService
     {
-        // 1. Local URL for testing on a physical phone on the same Wi-Fi network
-        private readonly string _localUrl = "http://192.168.31.175:5287/api/";
-        
-        // 2. Live URL (AWS Lambda) - We will switch to this when going live
-        private readonly string _liveUrl = "https://shvfrpgoe7hvwgcv57ua4edeku0kymaj.lambda-url.ap-south-1.on.aws/";
-
-        // 3. Toggle this flag to true to test locally, or false for production
-        private readonly bool _useLocalBackend = true;
-
+        // Network address for local Mac backend (.NET Web API)
+        private readonly string _baseUrl = "http://192.168.31.175:5287/api/";
         private readonly HttpClient _httpClient;
 
         public ApiService()
@@ -26,21 +19,15 @@ namespace DeliveryApp.Services
             _httpClient = new HttpClient();
         }
 
-        private string GetBaseUrl()
-        {
-            return _useLocalBackend ? _localUrl : _liveUrl;
-        }
-
         public async Task<bool> DriverLoginAsync(string phone, string password)
         {
             try
             {
-                // We reuse the OrderRequest struct logic on the backend for simplicity
                 var payload = new { action = password, driverPhone = phone };
                 string jsonPayload = JsonSerializer.Serialize(payload);
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-                string url = _useLocalBackend ? _localUrl + "orders/driver/login" : _liveUrl;
+                string url = _baseUrl + "orders/driver/login";
                 var response = await _httpClient.PostAsync(url, content);
                 
                 return response.IsSuccessStatusCode;
@@ -60,14 +47,7 @@ namespace DeliveryApp.Services
                 string jsonPayload = JsonSerializer.Serialize(payload);
                 var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-                string url = GetBaseUrl();
-                
-                // If you build a new local backend, you might want to route it to a specific endpoint
-                if (_useLocalBackend)
-                {
-                    url += "orders/assigned"; 
-                }
-
+                string url = _baseUrl + "orders/assigned";
                 var response = await _httpClient.PostAsync(url, content);
                 
                 if (response.IsSuccessStatusCode)
@@ -89,7 +69,7 @@ namespace DeliveryApp.Services
         {
             try
             {
-                string url = _useLocalBackend ? _localUrl + "orders/settings" : _liveUrl;
+                string url = _baseUrl + "orders/settings";
                 var response = await _httpClient.GetAsync(url);
                 if (response.IsSuccessStatusCode)
                 {
@@ -112,7 +92,7 @@ namespace DeliveryApp.Services
                 string jsonPayload = JsonSerializer.Serialize(payload);
                 var content = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json");
 
-                string url = _useLocalBackend ? _localUrl + "orders/complete" : _liveUrl;
+                string url = _baseUrl + "orders/complete";
                 var response = await _httpClient.PostAsync(url, content);
 
                 return response.IsSuccessStatusCode;
