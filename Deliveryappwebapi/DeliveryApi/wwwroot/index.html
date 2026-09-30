@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Shunmugarai ERP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+    
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-900 mb-2"><i class="fas fa-boxes mr-2"></i>Shunmugarai</h1>
+            <p class="text-gray-500">Admin ERP System</p>
+        </div>
+        
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Admin Password</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-lock text-gray-400"></i>
+                    </div>
+                    <input type="password" id="password" required
+                        class="pl-10 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="Enter master password">
+                </div>
+            </div>
+            
+            <button type="submit" 
+                class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg transition-colors flex justify-center items-center">
+                <i class="fas fa-sign-in-alt mr-2"></i> Login to Dashboard
+            </button>
+            <p id="errorMsg" class="text-red-500 text-sm text-center hidden mt-2">Incorrect password. Please try again.</p>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const pass = document.getElementById('password').value;
+            if (pass === 'admin') {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                window.location.href = '/erp.html';
+            } else {
+                document.getElementById('errorMsg').classList.remove('hidden');
+                document.getElementById('password').value = '';
+            }
+        });
+    </script>
+</body>
+</html>

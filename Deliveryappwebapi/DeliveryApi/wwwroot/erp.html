@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shift Logistics - ERP Dashboard</title>
+    <script>
+        // Simple Auth Check
+        if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+            window.location.href = '/index.html';
+        }
+    </script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -70,6 +76,9 @@
             <li><a class="nav-link" onclick="showTab('drivers')"><i class="fas fa-users w-6"></i> Drivers</a></li>
             <li><a class="nav-link" onclick="showTab('settings')"><i class="fas fa-cog w-6"></i> Settings</a></li>
         </ul>
+        <div class="absolute bottom-10 left-0 w-full px-4">
+            <button onclick="logoutAdmin()" class="w-full text-left nav-link text-red-300 hover:text-red-100"><i class="fas fa-sign-out-alt w-6"></i> Logout</button>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -278,6 +287,11 @@
             } else {
                 loadDatabase();
             }
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('adminLoggedIn');
+            window.location.href = '/index.html';
         }
 
         async function runSql(sqlQuery) {
