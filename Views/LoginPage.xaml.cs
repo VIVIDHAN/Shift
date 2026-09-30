@@ -5,6 +5,24 @@ public partial class LoginPage : ContentPage
     public LoginPage()
     {
         InitializeComponent();
+        LanguageToggle.IsToggled = Services.LocalizationManager.Instance.IsTamil;
+    }
+
+    private void OnLanguageToggled(object sender, ToggledEventArgs e)
+    {
+        Services.LocalizationManager.Instance.IsTamil = e.Value;
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        this.Content.Opacity = 0;
+        this.Content.TranslationY = 50;
+        
+        await Task.WhenAll(
+            this.Content.FadeTo(1, 800, Easing.CubicOut),
+            this.Content.TranslateTo(0, 0, 800, Easing.CubicOut)
+        );
     }
 
     private async void OnLoginClicked(object sender, EventArgs e)
@@ -25,8 +43,8 @@ public partial class LoginPage : ContentPage
 
             // Redirect to Dashboard
             var navPage = new NavigationPage(new DashboardPage());
-            navPage.BarBackgroundColor = Color.FromArgb("#F3F4F6");
-            navPage.BarTextColor = Color.FromArgb("#111827");
+            navPage.BarBackgroundColor = Color.FromArgb("#1E3A8A");
+            navPage.BarTextColor = Colors.White;
             Application.Current.MainPage = navPage;
         }
         else

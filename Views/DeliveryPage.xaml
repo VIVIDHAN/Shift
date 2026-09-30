@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:DeliveryApp.Services"
              x:Class="DeliveryApp.Views.DeliveryPage"
              Title="Dropoff"
              BackgroundColor="#F3F4F6">
@@ -39,7 +40,8 @@
                 </Grid>
             </Frame>
 
-            <Button Text="Capture Photo" ImageSource="{FontImageSource FontFamily=MaterialIcons, Glyph=&#xe412;, Color=White, Size=20}" 
+            <Button Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[TakePhoto]}" 
+                    ImageSource="{FontImageSource FontFamily=MaterialIcons, Glyph=&#xe412;, Color=White, Size=20}" 
                     Clicked="OnClickPhotoClicked"
                     BackgroundColor="#3B82F6"
                     TextColor="White"
@@ -48,7 +50,8 @@
                     CornerRadius="10"
                     HeightRequest="55"/>
 
-            <Button Text="Complete Delivery" ImageSource="{FontImageSource FontFamily=MaterialIcons, Glyph=&#xe86c;, Color=White, Size=20}" 
+            <Button Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[SubmitDelivery]}" 
+                    ImageSource="{FontImageSource FontFamily=MaterialIcons, Glyph=&#xe86c;, Color=White, Size=20}" 
                     Clicked="OnSubmitClicked"
                     BackgroundColor="#10B981"
                     TextColor="White"

@@ -55,9 +55,10 @@ public partial class DashboardPage : ContentPage
 
     private async void OnRefreshClicked(object sender, EventArgs e)
     {
+        var t = Services.LocalizationManager.Instance;
         if (sender is Button btn)
         {
-            btn.Text = "Refreshing...";
+            btn.Text = "...";
             btn.IsEnabled = false;
         }
 
@@ -65,8 +66,23 @@ public partial class DashboardPage : ContentPage
 
         if (sender is Button restoreBtn)
         {
-            restoreBtn.Text = "Refresh";
+            restoreBtn.Text = t["Refresh"];
             restoreBtn.IsEnabled = true;
+        }
+    }
+
+    private async void OnLogoutClicked(object sender, EventArgs e)
+    {
+        var t = Services.LocalizationManager.Instance;
+        bool confirm = await DisplayAlert(t["Logout"], t["LogoutConfirm"], t["Yes"], t["No"]);
+        if (confirm)
+        {
+            Preferences.Remove("DriverPhone");
+            
+            var navPage = new NavigationPage(new LoginPage());
+            navPage.BarBackgroundColor = Color.FromArgb("#1E3A8A");
+            navPage.BarTextColor = Colors.White;
+            Application.Current.MainPage = navPage;
         }
     }
 }

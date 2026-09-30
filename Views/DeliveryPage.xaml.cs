@@ -14,10 +14,11 @@ public partial class DeliveryPage : ContentPage
         InitializeComponent();
         _currentOrder = order;
 
+        var t = Services.LocalizationManager.Instance;
         OrderIdLabel.Text = $"Order ID: {order.OrderId}";
-        ItemsLabel.Text = $"Items: {order.Items}";
-        CustomerLabel.Text = $"Customer: {order.CustomerName}";
-        LocationLabel.Text = $"Location: {order.Location}";
+        ItemsLabel.Text = $"{t["Items"]}: {order.Items}";
+        CustomerLabel.Text = $"{t["Customer"]}: {order.CustomerName}";
+        LocationLabel.Text = $"{t["Location"]}: {order.Location}";
     }
 
     private async void OnClickPhotoClicked(object sender, EventArgs e)

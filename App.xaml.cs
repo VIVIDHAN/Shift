@@ -11,9 +11,21 @@ public partial class App : Application
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
-		var navPage = new NavigationPage(new Views.LoginPage());
-		navPage.BarBackgroundColor = Color.FromArgb("#F3F4F6");
-		navPage.BarTextColor = Color.FromArgb("#111827");
+		Page rootPage;
+		string savedPhone = Preferences.Get("DriverPhone", "");
+		
+		if (!string.IsNullOrEmpty(savedPhone))
+		{
+			rootPage = new Views.DashboardPage();
+		}
+		else
+		{
+			rootPage = new Views.LoginPage();
+		}
+
+		var navPage = new NavigationPage(rootPage);
+		navPage.BarBackgroundColor = Color.FromArgb("#1E3A8A"); // Using our primary blue
+		navPage.BarTextColor = Colors.White;
 		return new Window(navPage);
 	}
 }

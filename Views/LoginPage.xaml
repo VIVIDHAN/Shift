@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:services="clr-namespace:DeliveryApp.Services"
              x:Class="DeliveryApp.Views.LoginPage"
              NavigationPage.HasNavigationBar="False"
              BackgroundColor="#F3F4F6">
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
     
     <Grid BackgroundColor="#F3F4F6">
+        <!-- Language Toggle -->
+        <HorizontalStackLayout HorizontalOptions="End" VerticalOptions="Start" Margin="20,50,20,0" Spacing="8">
+            <Label Text="English" TextColor="#4B5563" VerticalOptions="Center" FontSize="14" FontAttributes="Bold" />
+            <Switch x:Name="LanguageToggle" Toggled="OnLanguageToggled" OnColor="#1E3A8A" ThumbColor="White" />
+            <Label Text="தமிழ்" TextColor="#4B5563" VerticalOptions="Center" FontSize="14" FontAttributes="Bold" />
+        </HorizontalStackLayout>
+
         <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="25" Padding="20">
             
             <!-- Logo Section -->
             <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
                 <Label Text="&#xe558;" FontFamily="MaterialIcons" TextColor="#1E3A8A" FontSize="80" HorizontalOptions="Center"/>
-                <Label Text="SHUNMUGARAI" TextColor="#1E3A8A" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center" CharacterSpacing="2"/>
-                <Label Text="LOGISTICS" TextColor="#3B82F6" FontSize="14" FontAttributes="Bold" HorizontalOptions="Center" CharacterSpacing="4"/>
+                <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[AppTitle]}" TextColor="#1E3A8A" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center" CharacterSpacing="2"/>
             </VerticalStackLayout>
             
             <!-- Login Card -->
@@ -25,13 +32,13 @@
                    WidthRequest="340">
                    
                 <VerticalStackLayout Spacing="25">
-                    <Label Text="Driver Login" 
+                    <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Login]}" 
                            FontSize="24" 
                            TextColor="#111827"
                            HorizontalOptions="Center" 
                            FontAttributes="Bold"/>
                            
-                    <Label Text="Enter your phone number to start" 
+                    <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[PhonePlaceholder]}" 
                            FontSize="14" 
                            TextColor="#6B7280"
                            HorizontalOptions="Center"
@@ -42,7 +49,7 @@
                         <Grid ColumnDefinitions="50,*">
                             <Label Text="&#xe0cd;" FontFamily="MaterialIcons" TextColor="#9CA3AF" FontSize="24" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="0"/>
                             <Entry x:Name="PhoneEntry"
-                                   Placeholder="Phone Number"
+                                   Placeholder="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[PhonePlaceholder]}"
                                    Keyboard="Telephone"
                                    FontSize="18"
                                    TextColor="#111827"
@@ -57,7 +64,7 @@
                         <Grid ColumnDefinitions="50,*">
                             <Label Text="&#xe897;" FontFamily="MaterialIcons" TextColor="#9CA3AF" FontSize="24" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="0"/>
                             <Entry x:Name="PasswordEntry"
-                                   Placeholder="Password"
+                                   Placeholder="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[PasswordPlaceholder]}"
                                    IsPassword="True"
                                    FontSize="18"
                                    TextColor="#111827"
@@ -68,7 +75,7 @@
                     </Frame>
 
                     <!-- Login Button -->
-                    <Button Text="Start Shift"
+                    <Button Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Login]}"
                             Clicked="OnLoginClicked"
                             FontSize="18"
                             FontAttributes="Bold"

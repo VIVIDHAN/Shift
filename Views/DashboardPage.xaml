@@ -3,13 +3,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="DeliveryApp.Views.DashboardPage"
              xmlns:models="clr-namespace:DeliveryApp.Models"
-             Title="My Routes"
+             xmlns:services="clr-namespace:DeliveryApp.Services"
+             Title="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[DashboardTitle]}"
              BackgroundColor="#F3F4F6">
              
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Logout]}" Clicked="OnLogoutClicked" Order="Primary" />
+    </ContentPage.ToolbarItems>
+
     <Grid RowDefinitions="Auto,*">
         <VerticalStackLayout Padding="20,20,20,20" BackgroundColor="#1E3A8A" Grid.Row="0">
-            <Label Text="Today's Deliveries" TextColor="White" FontSize="26" FontAttributes="Bold"/>
-            <Label Text="Complete your routes safely" TextColor="#BFDBFE" FontSize="15" Margin="0,5,0,0"/>
+            <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[TodaysDeliveries]}" TextColor="White" FontSize="26" FontAttributes="Bold"/>
+            <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[CompleteRoutesSafely]}" TextColor="#BFDBFE" FontSize="15" Margin="0,5,0,0"/>
         </VerticalStackLayout>
 
         <CollectionView x:Name="OrdersCollection" Grid.Row="1" Margin="15,0,15,15">
@@ -17,9 +22,9 @@
                 <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="15" Margin="0,100,0,0">
                     <!-- Since we want to avoid emojis based on earlier requests, let's use a Material Icon or nice text -->
                     <Label Text="&#xebcc;" FontFamily="MaterialIcons" FontSize="80" TextColor="#9CA3AF" HorizontalOptions="Center" />
-                    <Label Text="All Caught Up!" FontSize="22" FontAttributes="Bold" TextColor="#1F2937" HorizontalOptions="Center" />
-                    <Label Text="There are no active orders assigned to you right now. Take a break!" FontSize="16" TextColor="#6B7280" HorizontalTextAlignment="Center" HorizontalOptions="Center" Margin="20,0" />
-                    <Button Text="Refresh" Clicked="OnRefreshClicked" BackgroundColor="#E5E7EB" TextColor="#4B5563" FontAttributes="Bold" CornerRadius="8" WidthRequest="160" HeightRequest="45" Margin="0,20,0,0"/>
+                    <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[AllCaughtUp]}" FontSize="22" FontAttributes="Bold" TextColor="#1F2937" HorizontalOptions="Center" />
+                    <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[NoActiveOrders]}" FontSize="16" TextColor="#6B7280" HorizontalTextAlignment="Center" HorizontalOptions="Center" Margin="20,0" />
+                    <Button Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Refresh]}" Clicked="OnRefreshClicked" BackgroundColor="#E5E7EB" TextColor="#4B5563" FontAttributes="Bold" CornerRadius="8" WidthRequest="160" HeightRequest="45" Margin="0,20,0,0"/>
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
@@ -55,8 +60,8 @@
                             
                             <!-- Action -->
                             <Button Grid.Row="2" 
-                                    Text="Reached Location" 
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=ReachedLocationCommand}"
+                                    Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[ReachedLocation]}" 
+                                    Command="{Binding Source={x:RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ReachedLocationCommand}"
                                     CommandParameter="{Binding .}"
                                     BackgroundColor="#1E3A8A"
                                     TextColor="White"
