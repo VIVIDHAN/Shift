@@ -52,4 +52,21 @@ public partial class DashboardPage : ContentPage
     {
         await Navigation.PushAsync(new DeliveryPage(order));
     }
+
+    private async void OnRefreshClicked(object sender, EventArgs e)
+    {
+        if (sender is Button btn)
+        {
+            btn.Text = "Refreshing...";
+            btn.IsEnabled = false;
+        }
+
+        await LoadOrdersAsync();
+
+        if (sender is Button restoreBtn)
+        {
+            restoreBtn.Text = "Refresh";
+            restoreBtn.IsEnabled = true;
+        }
+    }
 }

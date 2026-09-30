@@ -13,7 +13,7 @@ namespace DeliveryApp.Services
         // Network address for local Mac backend (.NET Web API)
         private readonly string _baseUrl = "http://192.168.31.175:5287/api/";
         private readonly HttpClient _httpClient;
-
+        // dotnet build DeliveryApp.csproj -t:Run -f net10.0-android
         public ApiService()
         {
             _httpClient = new HttpClient();

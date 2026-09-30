@@ -13,6 +13,15 @@
         </VerticalStackLayout>
 
         <CollectionView x:Name="OrdersCollection" Grid.Row="1" Margin="15,0,15,15">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="15" Margin="0,100,0,0">
+                    <!-- Since we want to avoid emojis based on earlier requests, let's use a Material Icon or nice text -->
+                    <Label Text="&#xebcc;" FontFamily="MaterialIcons" FontSize="80" TextColor="#9CA3AF" HorizontalOptions="Center" />
+                    <Label Text="All Caught Up!" FontSize="22" FontAttributes="Bold" TextColor="#1F2937" HorizontalOptions="Center" />
+                    <Label Text="There are no active orders assigned to you right now. Take a break!" FontSize="16" TextColor="#6B7280" HorizontalTextAlignment="Center" HorizontalOptions="Center" Margin="20,0" />
+                    <Button Text="Refresh" Clicked="OnRefreshClicked" BackgroundColor="#E5E7EB" TextColor="#4B5563" FontAttributes="Bold" CornerRadius="8" WidthRequest="160" HeightRequest="45" Margin="0,20,0,0"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Order">
                     <Frame Margin="0,8" Padding="0" CornerRadius="15" HasShadow="True" BorderColor="Transparent" BackgroundColor="White">
