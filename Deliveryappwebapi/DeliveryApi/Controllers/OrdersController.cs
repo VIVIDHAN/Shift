@@ -35,20 +35,40 @@ namespace DeliveryApi.Controllers
 
         // POST: api/orders/complete
         [HttpPost("complete")]
-        public async Task<IActionResult> CompleteDelivery([FromBody] OrderRequest request)
+        public async Task<IActionResult> CompleteDelivery([FromForm] string action, [FromForm] string driverPhone, [FromForm] string orderId, IFormFile photo)
         {
-            if (request.action != "completeDelivery" || string.IsNullOrEmpty(request.driverPhone) || string.IsNullOrEmpty(request.orderId))
+            if (action != "completeDelivery" || string.IsNullOrEmpty(driverPhone) || string.IsNullOrEmpty(orderId))
             {
                 return BadRequest("Invalid request.");
             }
 
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == request.orderId && o.DriverPhone == request.driverPhone);
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == orderId && o.DriverPhone == driverPhone);
             if (order == null)
             {
                 return NotFound("Order not found or not assigned to this driver.");
             }
 
             order.Status = "Delivered";
+
+            // Save photo if uploaded
+            if (photo != null && photo.Length > 0)
+            {
+                var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsDir))
+                    Directory.CreateDirectory(uploadsDir);
+
+                var fileName = $"{orderId}_{DateTime.Now.Ticks}.jpg";
+                var filePath = Path.Combine(uploadsDir, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await photo.CopyToAsync(stream);
+                }
+
+                // Generate public URL relative to the server
+                order.DeliveryPhotoUrl = $"/uploads/{fileName}";
+            }
+
             await _context.SaveChangesAsync();
 
             return Ok(); 

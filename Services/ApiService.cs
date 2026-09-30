@@ -84,15 +84,24 @@ namespace DeliveryApp.Services
             return null;
         }
 
-        public async Task<bool> CompleteDeliveryAsync(string orderId, string driverPhone)
+        public async Task<bool> CompleteDeliveryAsync(string orderId, string driverPhone, byte[] photoData = null)
         {
             try
             {
-                var payload = new { action = "completeDelivery", orderId = orderId, driverPhone = driverPhone };
-                string jsonPayload = JsonSerializer.Serialize(payload);
-                var content = new StringContent(jsonPayload, System.Text.Encoding.UTF8, "application/json");
-
                 string url = _baseUrl + "orders/complete";
+                
+                var content = new MultipartFormDataContent();
+                content.Add(new StringContent("completeDelivery"), "action");
+                content.Add(new StringContent(orderId), "orderId");
+                content.Add(new StringContent(driverPhone), "driverPhone");
+                
+                if (photoData != null)
+                {
+                    var imageContent = new ByteArrayContent(photoData);
+                    imageContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+                    content.Add(imageContent, "photo", "delivery.jpg");
+                }
+
                 var response = await _httpClient.PostAsync(url, content);
 
                 return response.IsSuccessStatusCode;

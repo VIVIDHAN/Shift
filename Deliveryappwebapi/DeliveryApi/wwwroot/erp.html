@@ -331,6 +331,9 @@
                     else if (c.includes('Phone')) {
                         val = `<span class="text-primary"><i class="fas fa-phone-alt small me-1"></i>${val}</span>`;
                     }
+                    else if (c === 'DeliveryPhotoUrl' && val) {
+                        val = `<a href="${val}" target="_blank"><img src="${val}" style="max-height: 48px; border-radius: 4px;" alt="Delivery Photo" /></a>`;
+                    }
 
                     html += `<td class="border-0 py-3 px-3">${val}</td>`;
                 });

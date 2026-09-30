@@ -1,5 +1,6 @@
 using DeliveryApp.Models;
 using DeliveryApp.Services;
+using System.IO;
 
 namespace DeliveryApp.Views;
 
@@ -58,10 +59,19 @@ public partial class DeliveryPage : ContentPage
 
         try
         {
+            byte[] photoData = null;
+            if (_photoResult != null)
+            {
+                using var stream = await _photoResult.OpenReadAsync();
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                photoData = memoryStream.ToArray();
+            }
+
             // 1. Update Database via our new Local API
             var apiService = new ApiService();
             string driverPhone = Preferences.Get("DriverPhone", "Unknown");
-            bool dbSuccess = await apiService.CompleteDeliveryAsync(_currentOrder.OrderId, driverPhone);
+            bool dbSuccess = await apiService.CompleteDeliveryAsync(_currentOrder.OrderId, driverPhone, photoData);
             
             if (!dbSuccess)
             {

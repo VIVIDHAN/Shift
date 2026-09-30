@@ -14,6 +14,7 @@ namespace DeliveryApi.Models
         public string Location { get; set; } = string.Empty;
         public DateTime OrderDate { get; set; }
         public string Status { get; set; } = "Assigned";
+        public string DeliveryPhotoUrl { get; set; } = string.Empty;
     }
 
     public class OrderRequest
