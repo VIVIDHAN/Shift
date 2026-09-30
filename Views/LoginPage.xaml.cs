@@ -88,7 +88,7 @@ namespace DeliveryApp.Views
             try
             {
                 using var client = new HttpClient();
-                client.BaseAddress = new Uri("http://10.0.2.2:5287");
+                client.BaseAddress = new Uri("http://192.168.31.175:5287");
 
                 var loginData = new { PhoneNumber = phone, Password = password };
                 var json = JsonSerializer.Serialize(loginData);

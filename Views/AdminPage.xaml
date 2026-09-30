@@ -6,7 +6,7 @@
              BackgroundColor="#1E3A8A">
              
     <Grid>
-        <WebView x:Name="AdminWebView" Source="http://10.0.2.2:5287/erp.html" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" />
+        <WebView x:Name="AdminWebView" Source="http://192.168.31.175:5287/erp.html" HorizontalOptions="Fill" VerticalOptions="Fill" />
     </Grid>
 
 </ContentPage>
