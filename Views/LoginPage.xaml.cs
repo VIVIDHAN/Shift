@@ -33,6 +33,19 @@ namespace DeliveryApp.Views
         private void OnLanguageToggled(object sender, ToggledEventArgs e)
         {
             LocalizationManager.Instance.IsTamil = e.Value;
+            
+            if (isAdminMode)
+            {
+                PhoneEntry.Placeholder = LocalizationManager.Instance.IsTamil ? "நிர்வாகி பயனர் பெயர்" : "Admin Username";
+                LoginTitleLabel.Text = LocalizationManager.Instance.IsTamil ? "நிர்வாகி உள்நுழைவு" : "Admin Login";
+                SubmitLoginBtn.Text = LocalizationManager.Instance.IsTamil ? "கட்டுப்பாட்டுப் பலகத்தைத் திற" : "Open ERP";
+            }
+            else
+            {
+                PhoneEntry.Placeholder = LocalizationManager.Instance.IsTamil ? "தொலைபேசி எண்" : "Phone Number";
+                LoginTitleLabel.Text = LocalizationManager.Instance.IsTamil ? "ஓட்டுநர் உள்நுழைவு" : "Driver Login";
+                SubmitLoginBtn.Text = LocalizationManager.Instance.IsTamil ? "உள்நுழைய" : "Start Shift";
+            }
         }
 
         private void OnRoleDriverClicked(object sender, EventArgs e)
@@ -43,6 +56,8 @@ namespace DeliveryApp.Views
             AdminBtn.BackgroundColor = Colors.Transparent;
             AdminBtn.TextColor = Color.FromArgb("#6B7280");
             PhoneFrame.IsVisible = true;
+            PhoneEntry.Placeholder = LocalizationManager.Instance.IsTamil ? "தொலைபேசி எண்" : "Phone Number";
+            PhoneEntry.Keyboard = Keyboard.Telephone;
             LoginSubtitleLabel.IsVisible = true;
             LoginTitleLabel.Text = LocalizationManager.Instance.IsTamil ? "ஓட்டுநர் உள்நுழைவு" : "Driver Login";
             SubmitLoginBtn.Text = LocalizationManager.Instance.IsTamil ? "உள்நுழைய" : "Start Shift";
@@ -55,7 +70,9 @@ namespace DeliveryApp.Views
             AdminBtn.TextColor = Colors.White;
             DriverBtn.BackgroundColor = Colors.Transparent;
             DriverBtn.TextColor = Color.FromArgb("#6B7280");
-            PhoneFrame.IsVisible = false;
+            PhoneFrame.IsVisible = true;
+            PhoneEntry.Placeholder = LocalizationManager.Instance.IsTamil ? "நிர்வாகி பயனர் பெயர்" : "Admin Username";
+            PhoneEntry.Keyboard = Keyboard.Text;
             LoginSubtitleLabel.IsVisible = false;
             LoginTitleLabel.Text = LocalizationManager.Instance.IsTamil ? "நிர்வாகி உள்நுழைவு" : "Admin Login";
             SubmitLoginBtn.Text = LocalizationManager.Instance.IsTamil ? "கட்டுப்பாட்டுப் பலகத்தைத் திற" : "Open ERP";
@@ -65,13 +82,13 @@ namespace DeliveryApp.Views
         {
             if (isAdminMode)
             {
-                if (PasswordEntry.Text == "admin")
+                if (PhoneEntry.Text == "Admin" && PasswordEntry.Text == "admin123")
                 {
                     await Navigation.PushAsync(new AdminPage());
                 }
                 else
                 {
-                    await DisplayAlert("Error", "Invalid admin password. Try 'admin'.", "OK");
+                    await DisplayAlert("Error", "Invalid admin credentials.", "OK");
                 }
                 return;
             }
