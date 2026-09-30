@@ -94,12 +94,12 @@ namespace DeliveryApp.Views
                 var json = JsonSerializer.Serialize(loginData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await client.PostAsync("/api/driver/login", content);
+                var response = await client.PostAsync("/api/orders/driver/login", content);
 
                 if (response.IsSuccessStatusCode)
                 {
                     Preferences.Set("DriverPhone", phone);
-                    Application.Current.MainPage = new NavigationPage(new DashboardPage(phone));
+                    Application.Current.MainPage = new NavigationPage(new DashboardPage());
                 }
                 else
                 {
