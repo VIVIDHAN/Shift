@@ -11,10 +11,15 @@ public class MainActivity : MauiAppCompatActivity
     {
         base.OnCreate(savedInstanceState);
         
-        if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
+        if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
         {
-            Window.DecorView.SystemUiVisibility = (Android.Views.StatusBarVisibility)Android.Views.SystemUiFlags.LightStatusBar;
-            Window.SetStatusBarColor(Android.Graphics.Color.ParseColor("#F3F4F6"));
+            // Set status bar to Deep Blue (#1E3A8A) with white text/icons
+            Window.ClearFlags(Android.Views.WindowManagerFlags.TranslucentStatus);
+            Window.AddFlags(Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds);
+            Window.SetStatusBarColor(Android.Graphics.Color.ParseColor("#1E3A8A"));
+            
+            // Remove LightStatusBar so the text/icons stay white (default for dark backgrounds)
+            Window.DecorView.SystemUiVisibility = 0; 
         }
     }
 }
