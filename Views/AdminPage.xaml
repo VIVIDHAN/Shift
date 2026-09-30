@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DeliveryApp.Views.AdminPage"
+             Title="Admin ERP"
+             BackgroundColor="#1E3A8A">
+             
+    <Grid>
+        <WebView x:Name="AdminWebView" Source="http://10.0.2.2:5287/erp.html" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" />
+    </Grid>
+
+</ContentPage>

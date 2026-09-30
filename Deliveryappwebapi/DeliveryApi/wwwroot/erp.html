@@ -3,34 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shunmugarai - Full ERP System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Shift Logistics - ERP Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E3A8A', // Deep Blue
+                        success: '#10B981', // Emerald Green
+                        accent: '#3B82F6',  // Sky Blue
+                        surface: '#FFFFFF',
+                        background: '#F3F4F6'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { background-color: #F8FAFC; font-family: 'Roboto Slab', serif; }
-        .sidebar { background-color: #0f172a; color: white; min-height: 100vh; padding: 20px 0; position: fixed; width: 250px; box-shadow: 4px 0 10px rgba(0,0,0,0.05); }
-        .sidebar h3 { font-weight: bold; margin-bottom: 30px; text-align: center; font-size: 22px; }
-        .nav-link { color: #94a3b8; margin: 8px 15px; border-radius: 8px; padding: 12px 20px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-        .nav-link:hover { background-color: #1e293b; color: white; }
-        .nav-link.active { background-color: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
-        .main-content { margin-left: 250px; padding: 30px; }
-        .card { border-radius: 12px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .table-responsive { max-height: 400px; overflow-y: auto; }
-        thead th { position: sticky; top: 0; background-color: #F8F9FA !important; z-index: 1; }
+        body { font-family: 'Inter', sans-serif; background-color: #F3F4F6; color: #111827; }
+        .sidebar { background-color: #1E3A8A; color: white; min-height: 100vh; width: 260px; position: fixed; }
+        .nav-link { display: block; padding: 12px 20px; color: #BFDBFE; font-weight: 500; border-radius: 8px; margin: 8px 16px; cursor: pointer; transition: all 0.2s; }
+        .nav-link:hover { background-color: #1E40AF; color: white; }
+        .nav-link.active { background-color: #2563EB; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .main-content { margin-left: 260px; padding: 32px; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 24px; }
+        /* Table styles */
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        th { text-align: left; padding: 12px 16px; color: #6B7280; font-size: 12px; text-transform: uppercase; font-weight: 600; }
+        td { padding: 16px; background: white; border-top: 1px solid #E5E7EB; border-bottom: 1px solid #E5E7EB; }
+        td:first-child { border-left: 1px solid #E5E7EB; border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+        td:last-child { border-right: 1px solid #E5E7EB; border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+        tr:hover td { background-color: #F9FAFB; }
+        /* Forms */
+        input, select, textarea { width: 100%; padding: 10px 14px; border: 1px solid #E5E7EB; border-radius: 8px; background-color: #F9FAFB; outline: none; transition: all 0.2s; font-size: 14px; }
+        input:focus, select:focus, textarea:focus { border-color: #1E3A8A; background-color: white; box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1); }
+        .btn-primary { background-color: #1E3A8A; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.2s; }
+        .btn-primary:hover { background-color: #172554; }
+        .btn-success { background-color: #10B981; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; transition: all 0.2s; }
+        .btn-success:hover { background-color: #059669; }
+        .btn-icon { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .btn-icon-edit { color: #3B82F6; border: 1px solid #BFDBFE; background: white; }
+        .btn-icon-edit:hover { background: #DBEAFE; }
+        .btn-icon-del { color: #EF4444; border: 1px solid #FECACA; background: white; }
+        .btn-icon-del:hover { background: #FEE2E2; }
+        .badge-success { background-color: #D1FAE5; color: #065F46; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
+        .badge-warning { background-color: #FEF3C7; color: #92400E; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
     
     <!-- Sidebar -->
     <div class="sidebar">
-        <h3><i class="fas fa-box-open me-2"></i>Shunmugarai ERP</h3>
-        <hr class="mx-3">
-        <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link active" onclick="showTab('dashboard')"><i class="fas fa-chart-line me-2"></i>Live Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" onclick="showTab('orders')"><i class="fas fa-clipboard-list me-2"></i>Manage Orders</a></li>
-            <li class="nav-item"><a class="nav-link" onclick="showTab('drivers')"><i class="fas fa-motorcycle me-2"></i>Manage Drivers</a></li>
-            <li class="nav-item"><a class="nav-link" onclick="showTab('settings')"><i class="fas fa-cog me-2"></i>Settings</a></li>
+        <div class="p-6 text-center">
+            <h3 class="text-2xl font-bold tracking-wide"><i class="fas fa-truck-fast mr-2"></i>Shift Logistics</h3>
+        </div>
+        <ul class="mt-4">
+            <li><a class="nav-link active" onclick="showTab('dashboard')"><i class="fas fa-chart-line w-6"></i> Dashboard</a></li>
+            <li><a class="nav-link" onclick="showTab('orders')"><i class="fas fa-box-open w-6"></i> Orders</a></li>
+            <li><a class="nav-link" onclick="showTab('drivers')"><i class="fas fa-users w-6"></i> Drivers</a></li>
+            <li><a class="nav-link" onclick="showTab('settings')"><i class="fas fa-cog w-6"></i> Settings</a></li>
         </ul>
     </div>
 
@@ -39,170 +77,157 @@
         
         <!-- DASHBOARD TAB -->
         <div id="tab-dashboard" class="erp-tab">
-            <h2 class="fw-bold mb-4">Live Overview</h2>
-            <div class="row mb-5">
-                <div class="col-md-4">
-                    <div class="card p-4 border-0 shadow-sm" style="border-left: 5px solid #0d6efd !important;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="text-start">
-                                <h2 class="fw-bold text-dark mb-0" id="stat-total-orders">0</h2>
-                                <p class="text-muted small fw-bold text-uppercase mb-0 mt-1">Total Orders</p>
-                            </div>
-                            <div class="text-primary bg-primary bg-opacity-10 rounded-circle p-3">
-                                <i class="fas fa-boxes fa-2x"></i>
-                            </div>
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900">Live Overview</h2>
+                <div class="flex items-center bg-white rounded-full px-4 py-2 shadow-sm">
+                    <span class="w-3 h-3 bg-success rounded-full animate-pulse mr-2"></span>
+                    <span class="text-sm font-semibold text-gray-700">System Online</span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="card border-l-4 border-primary">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-4xl font-bold text-gray-900" id="stat-total-orders">0</h2>
+                            <p class="text-sm font-bold text-gray-500 uppercase mt-1">Total Orders</p>
+                        </div>
+                        <div class="text-primary bg-blue-50 rounded-full p-4">
+                            <i class="fas fa-boxes text-3xl"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card p-4 border-0 shadow-sm" style="border-left: 5px solid #198754 !important;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="text-start">
-                                <h2 class="fw-bold text-dark mb-0" id="stat-delivered">0</h2>
-                                <p class="text-muted small fw-bold text-uppercase mb-0 mt-1">Delivered</p>
-                            </div>
-                            <div class="text-success bg-success bg-opacity-10 rounded-circle p-3">
-                                <i class="fas fa-check-circle fa-2x"></i>
-                            </div>
+                <div class="card border-l-4 border-success">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-4xl font-bold text-gray-900" id="stat-delivered">0</h2>
+                            <p class="text-sm font-bold text-gray-500 uppercase mt-1">Delivered</p>
+                        </div>
+                        <div class="text-success bg-green-50 rounded-full p-4">
+                            <i class="fas fa-check-circle text-3xl"></i>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card p-4 border-0 shadow-sm" style="border-left: 5px solid #ffc107 !important;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="text-start">
-                                <h2 class="fw-bold text-dark mb-0" id="stat-active">0</h2>
-                                <p class="text-muted small fw-bold text-uppercase mb-0 mt-1">Active</p>
-                            </div>
-                            <div class="text-warning bg-warning bg-opacity-10 rounded-circle p-3">
-                                <i class="fas fa-truck-fast fa-2x"></i>
-                            </div>
+                <div class="card border-l-4 border-yellow-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-4xl font-bold text-gray-900" id="stat-active">0</h2>
+                            <p class="text-sm font-bold text-gray-500 uppercase mt-1">Active</p>
+                        </div>
+                        <div class="text-yellow-600 bg-yellow-50 rounded-full p-4">
+                            <i class="fas fa-route text-3xl"></i>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="card p-4">
-                <h4>All Database Tables View</h4>
-                <p class="text-muted">A raw live view of everything happening in the system.</p>
+            <div class="card">
+                <h4 class="text-lg font-bold mb-2">Raw Database Activity</h4>
+                <p class="text-gray-500 text-sm mb-4">A live view of all tables in the system.</p>
                 <div id="raw-tables-container">Loading...</div>
             </div>
         </div>
 
         <!-- ORDERS TAB -->
-        <div id="tab-orders" class="erp-tab" style="display: none;">
-            <h2 class="fw-bold mb-4">Manage Orders</h2>
+        <div id="tab-orders" class="erp-tab hidden">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">Manage Orders</h2>
             
-            <div class="row mb-4">
-                <div class="col-md-6 col-lg-5">
-                    <div class="card p-4">
-                        <h4>Create New Order</h4>
-                        <form id="createOrderForm">
-                            <div class="mb-2">
-                                <label class="form-label text-muted fw-bold small">Assign Driver</label>
-                                <select class="form-select form-select-sm" id="newOrderDriver" required></select>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label text-muted fw-bold small">Customer Name</label>
-                                <input type="text" class="form-control form-control-sm" id="newOrderCustomer" required>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label text-muted fw-bold small">Customer Phone</label>
-                                <input type="text" class="form-control form-control-sm" id="newOrderPhone" required>
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label text-muted fw-bold small">Delivery Address</label>
-                                <input type="text" class="form-control form-control-sm" id="newOrderLocation" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted fw-bold small">Items to Deliver</label>
-                                <input type="text" class="form-control form-control-sm" id="newOrderItems" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 fw-bold">Create Order</button>
-                        </form>
-                    </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="card col-span-1">
+                    <h4 class="text-lg font-bold mb-4">Create New Order</h4>
+                    <form id="createOrderForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Assign Driver</label>
+                            <select id="newOrderDriver" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Customer Name</label>
+                            <input type="text" id="newOrderCustomer" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Customer Phone</label>
+                            <input type="text" id="newOrderPhone" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Delivery Address</label>
+                            <input type="text" id="newOrderLocation" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Items to Deliver</label>
+                            <input type="text" id="newOrderItems" required>
+                        </div>
+                        <button type="submit" class="btn-primary w-full mt-2">Dispatch Order</button>
+                    </form>
                 </div>
-            </div>
-
-            <div class="row">
-                <div class="col-12">
-                    <div class="card p-4">
-                        <h4>Order History</h4>
-                        <div class="table-responsive" id="ordersGrid"></div>
-                    </div>
+                
+                <div class="card col-span-2 overflow-auto" style="max-height: 600px;">
+                    <h4 class="text-lg font-bold mb-4">Order History</h4>
+                    <div id="ordersGrid"></div>
                 </div>
             </div>
         </div>
 
         <!-- DRIVERS TAB -->
-        <div id="tab-drivers" class="erp-tab" style="display: none;">
-            <h2 class="fw-bold mb-4">Manage Drivers</h2>
+        <div id="tab-drivers" class="erp-tab hidden">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">Manage Drivers</h2>
             
-            <div class="row mb-4">
-                <div class="col-md-6 col-lg-5">
-                    <div class="card p-4">
-                        <h4>Add New Driver</h4>
-                        <form id="createDriverForm">
-                            <div class="mb-2">
-                                <label class="form-label text-muted fw-bold small">Driver Full Name</label>
-                                <input type="text" class="form-control form-control-sm" id="newDriverName" required placeholder="e.g. John Smith">
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label text-muted fw-bold small">Driver Phone</label>
-                                <input type="text" class="form-control form-control-sm" id="newDriverPhone" required placeholder="e.g. 555-0100">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-muted fw-bold small">Driver Password</label>
-                                <input type="password" class="form-control form-control-sm" id="newDriverPassword" required placeholder="Enter secure password">
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 fw-bold">Save Driver</button>
-                        </form>
-                    </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="card col-span-1">
+                    <h4 class="text-lg font-bold mb-4">Add New Driver</h4>
+                    <form id="createDriverForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Driver Full Name</label>
+                            <input type="text" id="newDriverName" required placeholder="e.g. John Smith">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Driver Phone</label>
+                            <input type="text" id="newDriverPhone" required placeholder="e.g. 555-0100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Driver Password</label>
+                            <input type="password" id="newDriverPassword" required placeholder="Enter secure password">
+                        </div>
+                        <button type="submit" class="btn-primary w-full mt-2">Save Driver</button>
+                    </form>
                 </div>
-            </div>
-
-            <div class="row">
-                <div class="col-12">
-                    <div class="card p-4">
-                        <h4>Driver Database</h4>
-                        <div class="table-responsive" id="driversGrid"></div>
-                    </div>
+                
+                <div class="card col-span-2 overflow-auto" style="max-height: 600px;">
+                    <h4 class="text-lg font-bold mb-4">Driver Database</h4>
+                    <div id="driversGrid"></div>
                 </div>
             </div>
         </div>
 
         <!-- SETTINGS TAB -->
-        <div id="tab-settings" class="erp-tab" style="display: none;">
-            <h2 class="fw-bold mb-4">Shop Settings</h2>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card p-4">
-                        <h4>Shop Details</h4>
-                        <p class="text-muted">Since this is a single-shop application, these details will be universally applied to all deliveries.</p>
-                        <form id="updateSettingsForm">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Shop Name</label>
-                                <input type="text" class="form-control" id="settingShopName" required disabled>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Shop Admin Phone</label>
-                                <input type="text" class="form-control" id="settingShopPhone" required disabled>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Shop Address</label>
-                                <textarea class="form-control" id="settingShopAddress" rows="2" disabled></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">SMS Delivery Template</label>
-                                <p class="text-muted small mb-1">Use {OrderId}, {CustomerName}, and {Items} as placeholders.</p>
-                                <textarea class="form-control" id="settingSmsTemplate" rows="3" disabled></textarea>
-                            </div>
-                            
-                            <div class="d-flex gap-2">
-                                <button type="button" id="btnUnlockSettings" class="btn btn-primary w-100 fw-bold" onclick="unlockSettings()">Modify Settings</button>
-                                <button type="submit" id="btnSaveSettings" class="btn btn-success w-100 fw-bold" style="display: none;">Save Settings</button>
-                            </div>
-                        </form>
-                    </div>
+        <div id="tab-settings" class="erp-tab hidden">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">Shop Settings</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card">
+                    <h4 class="text-lg font-bold mb-2">Shop Details</h4>
+                    <p class="text-sm text-gray-500 mb-6">These details will be universally applied to all deliveries.</p>
+                    <form id="updateSettingsForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Shop Name</label>
+                            <input type="text" id="settingShopName" required disabled>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Shop Admin Phone</label>
+                            <input type="text" id="settingShopPhone" required disabled>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Shop Address</label>
+                            <textarea id="settingShopAddress" rows="2" disabled></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">SMS Delivery Template</label>
+                            <p class="text-xs text-gray-500 mb-1">Use {OrderId}, {CustomerName}, and {Items} as placeholders.</p>
+                            <textarea id="settingSmsTemplate" rows="3" disabled></textarea>
+                        </div>
+                        
+                        <div class="flex gap-4 pt-2">
+                            <button type="button" id="btnUnlockSettings" class="btn-primary w-full" onclick="unlockSettings()">Modify Settings</button>
+                            <button type="submit" id="btnSaveSettings" class="btn-success w-full" style="display: none;">Save Settings</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -229,13 +254,18 @@
             document.getElementById('btnUnlockSettings').style.display = 'block';
             document.getElementById('btnSaveSettings').style.display = 'none';
         }
-        // Tab switching logic
+
         function showTab(tabName) {
-            document.querySelectorAll('.erp-tab').forEach(t => t.style.display = 'none');
+            document.querySelectorAll('.erp-tab').forEach(t => {
+                t.style.display = 'none';
+                t.classList.add('hidden');
+            });
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById('tab-' + tabName).style.display = 'block';
             
-            // Highlight the clicked link safely
+            const tab = document.getElementById('tab-' + tabName);
+            tab.style.display = 'block';
+            tab.classList.remove('hidden');
+            
             const links = document.querySelectorAll('.nav-link');
             links.forEach(l => {
                 if (l.getAttribute('onclick') && l.getAttribute('onclick').includes(tabName)) {
@@ -250,7 +280,6 @@
             }
         }
 
-        // Generic function to execute raw SQL (Super powerful for local ERP)
         async function runSql(sqlQuery) {
             const res = await fetch('/api/admin/query', {
                 method: 'POST',
@@ -262,11 +291,9 @@
 
         async function deleteRow(tableName, primaryKeyCol, primaryKeyValue) {
             if(!confirm(`Are you sure you want to delete ${primaryKeyValue} from ${tableName}?`)) return;
-            
             const sql = `DELETE FROM ${tableName} WHERE ${primaryKeyCol} = '${primaryKeyValue}'`;
             const result = await runSql(sql);
             if(result.success) {
-                alert('Deleted successfully!');
                 loadDatabase();
             } else {
                 alert('Failed to delete: ' + result.error);
@@ -277,11 +304,9 @@
             const row = JSON.parse(decodeURIComponent(rowEncoded));
             let updates = [];
             for (let key in row) {
-                // Skip non-editable or sensitive columns
                 if (key === primaryKeyCol || key === 'CreatedAt' || key === 'PasswordHash' || key === 'OrderDate') continue;
-                
                 let newVal = prompt(`Enter new value for ${key}:`, row[key] !== null ? row[key] : '');
-                if (newVal === null) return; // User pressed Cancel
+                if (newVal === null) return;
                 updates.push(`${key} = '${newVal.replace(/'/g, "''")}'`);
             }
             if (updates.length === 0) return;
@@ -295,55 +320,45 @@
             }
         }
 
-        // Generate an HTML table from JSON rows with Delete/Modify buttons
         function generateTableHtml(tableName, columns, rows, enableDelete = true) {
-            if (rows.length === 0) return '<div class="alert alert-light text-center border mt-3 text-muted">No data found in this category.</div>';
+            if (rows.length === 0) return '<div class="text-center p-6 text-gray-500 bg-gray-50 rounded-lg">No data found.</div>';
             
-            // Columns to completely hide from the UI for a cleaner look
             const hiddenColumns = ['ShopOwnerPhone', 'PasswordHash'];
             const visibleCols = columns.filter(c => !hiddenColumns.includes(c));
 
-            let html = '<table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0 8px;">';
-            html += '<thead class="text-secondary small text-uppercase" style="background: transparent;"><tr>';
-            visibleCols.forEach(c => html += `<th class="border-0 pb-2">${c}</th>`);
-            if (enableDelete) html += `<th class="border-0 pb-2 text-end">Actions</th>`;
+            let html = '<table><thead><tr>';
+            visibleCols.forEach(c => html += `<th>${c}</th>`);
+            if (enableDelete) html += `<th class="text-right">Actions</th>`;
             html += '</tr></thead><tbody>';
             
             const primaryKeyCol = columns[0];
 
             [...rows].reverse().forEach(row => {
-                html += '<tr class="bg-white shadow-sm" style="border-radius: 8px;">';
+                html += '<tr>';
                 visibleCols.forEach(c => {
                     let val = row[c] !== null ? row[c] : '';
                     
-                    // Prettify specific column types
                     if (c === 'Status') {
-                        if (val === 'Delivered') val = '<span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill"><i class="fas fa-check-circle me-1"></i>Delivered</span>';
-                        else if (val === 'Assigned') val = '<span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill"><i class="fas fa-clock me-1"></i>Assigned</span>';
+                        if (val === 'Delivered') val = '<span class="badge-success"><i class="fas fa-check-circle mr-1"></i>Delivered</span>';
+                        else if (val === 'Assigned') val = '<span class="badge-warning"><i class="fas fa-clock mr-1"></i>Assigned</span>';
                     }
-                    else if (c === 'OrderId' || c === 'Id') {
-                        val = `<span class="fw-bold text-dark">${val}</span>`;
-                    }
+                    else if (c === 'OrderId' || c === 'Id') val = `<span class="font-bold text-gray-900">${val}</span>`;
                     else if (c.includes('Date') || c === 'CreatedAt') {
-                        // Make dates look human readable
                         try { val = new Date(val).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}); } catch(e){}
                     }
-                    else if (c.includes('Phone')) {
-                        val = `<span class="text-primary"><i class="fas fa-phone-alt small me-1"></i>${val}</span>`;
-                    }
+                    else if (c.includes('Phone')) val = `<span class="text-primary font-medium"><i class="fas fa-phone-alt mr-1"></i>${val}</span>`;
                     else if (c === 'DeliveryPhotoUrl' && val) {
-                        val = `<a href="${val}" target="_blank"><img src="${val}" style="max-height: 48px; border-radius: 4px;" alt="Delivery Photo" /></a>`;
+                        val = `<a href="${val}" target="_blank"><img src="${val}" class="h-10 rounded shadow-sm border border-gray-200 hover:scale-110 transition-transform" alt="Photo" /></a>`;
                     }
-
-                    html += `<td class="border-0 py-3 px-3">${val}</td>`;
+                    html += `<td>${val}</td>`;
                 });
                 
                 if (enableDelete) {
                     const pkValue = row[primaryKeyCol];
                     const encodedRow = encodeURIComponent(JSON.stringify(row));
-                    html += `<td class="border-0 py-3 px-3 text-end">
-                        <button onclick="editRow('${tableName}', '${primaryKeyCol}', '${encodedRow}')" class="btn btn-sm btn-outline-primary rounded-circle me-1" title="Modify"><i class="fas fa-edit"></i></button>
-                        <button onclick="deleteRow('${tableName}', '${primaryKeyCol}', '${pkValue}')" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                    html += `<td class="text-right">
+                        <button onclick="editRow('${tableName}', '${primaryKeyCol}', '${encodedRow}')" class="btn-icon btn-icon-edit mr-1" title="Edit"><i class="fas fa-pen text-sm"></i></button>
+                        <button onclick="deleteRow('${tableName}', '${primaryKeyCol}', '${pkValue}')" class="btn-icon btn-icon-del" title="Delete"><i class="fas fa-trash text-sm"></i></button>
                     </td>`;
                 }
                 html += '</tr>';
@@ -364,21 +379,17 @@
                     document.getElementById('settingShopAddress').value = shop.Address || '';
                     document.getElementById('settingSmsTemplate').value = shop.SmsTemplate || '';
                 }
-            } catch (err) {
-                console.error("Error loading settings", err);
-            }
+            } catch (err) {}
         }
 
-        // Main function to load and bind all data
         async function loadDatabase() {
-            // DO NOT auto-load settings here anymore! It ruins user typing!
             try {
                 const response = await fetch('/api/admin/database');
                 const data = await response.json();
                 
                 let rawHtml = '';
                 data.forEach(table => {
-                    rawHtml += `<h5 class="mt-4 fw-bold text-primary">${table.tableName}</h5>`;
+                    rawHtml += `<h5 class="mt-8 mb-4 font-bold text-primary">${table.tableName}</h5>`;
                     rawHtml += generateTableHtml(table.tableName, table.columns, table.rows, false);
                 });
                 document.getElementById('raw-tables-container').innerHTML = rawHtml;
@@ -394,55 +405,42 @@
                 const driversTable = data.find(t => t.tableName === 'Drivers');
                 if (driversTable) {
                     document.getElementById('driversGrid').innerHTML = generateTableHtml('Drivers', driversTable.columns, driversTable.rows, true);
-                    
                     const dSelect = document.getElementById('newOrderDriver');
+                    const curVal = dSelect.value;
                     dSelect.innerHTML = '<option value="">-- Select Driver --</option>';
                     driversTable.rows.forEach(r => dSelect.innerHTML += `<option value="${r.PhoneNumber}">${r.FullName} (${r.PhoneNumber})</option>`);
+                    dSelect.value = curVal;
                 }
-            } catch (err) {
-                console.error("Error loading data", err);
-            }
+            } catch (err) {}
         }
 
-        // Form: Update Settings
         document.getElementById('updateSettingsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const shopName = document.getElementById('settingShopName').value.replace(/'/g, "''");
             const shopPhone = document.getElementById('settingShopPhone').value.replace(/'/g, "''");
             const address = document.getElementById('settingShopAddress').value.replace(/'/g, "''");
             const smsTemplate = document.getElementById('settingSmsTemplate').value.replace(/'/g, "''");
-            
-            // We update the single row (Id = 1). The ON DUPLICATE KEY UPDATE in the backend guarantees it exists.
             const sql = `UPDATE ShopOwners SET ShopName = '${shopName}', PhoneNumber = '${shopPhone}', Address = '${address}', SmsTemplate = '${smsTemplate}' WHERE Id = 1`;
             const result = await runSql(sql);
             if(result.success) {
                 loadDatabase();
                 lockSettings();
-                alert("Shop Settings updated successfully!");
-            } else {
-                alert("Error updating settings: " + result.error);
             }
         });
 
-        // Form: Add Driver
         document.getElementById('createDriverForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('newDriverName').value.replace(/'/g, "''");
             const phone = document.getElementById('newDriverPhone').value.replace(/'/g, "''");
             const password = document.getElementById('newDriverPassword').value.replace(/'/g, "''");
-            
             const sql = `INSERT INTO Drivers (FullName, PhoneNumber, PasswordHash) VALUES ('${name}', '${phone}', '${password}')`;
             const result = await runSql(sql);
             if(result.success) {
                 e.target.reset();
                 loadDatabase();
-                alert("Driver added successfully!");
-            } else {
-                alert("Error: " + result.error);
             }
         });
 
-        // Form: Add Order
         document.getElementById('createOrderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = {
@@ -453,30 +451,20 @@
                 Location: document.getElementById('newOrderLocation').value,
                 Items: document.getElementById('newOrderItems').value
             };
-            
-            try {
-                const res = await fetch('/api/orders/create', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if(res.ok) {
-                    e.target.reset();
-                    loadDatabase();
-                    alert("Order created and assigned!");
-                } else {
-                    const errText = await res.text();
-                    alert("Failed to create order: " + errText);
-                }
-            } catch (err) {
-                alert("Network error: " + err.message);
+            const res = await fetch('/api/orders/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if(res.ok) {
+                e.target.reset();
+                loadDatabase();
+            } else {
+                alert("Failed to create order: " + await res.text());
             }
         });
 
-        // Load initially
         loadDatabase();
-        // Refresh every 10 seconds to make it a "live" dashboard
         setInterval(loadDatabase, 10000);
     </script>
 </body>

@@ -26,26 +26,37 @@
             <!-- Login Card -->
             <Frame BackgroundColor="White" 
                    CornerRadius="25" 
-                   Padding="25,35,25,35" 
+                   Padding="25,25,25,35" 
                    HasShadow="True" 
                    BorderColor="Transparent"
                    WidthRequest="340">
                    
                 <VerticalStackLayout Spacing="25">
+                    
+                    <!-- Role Switcher -->
+                    <Frame BorderColor="#E5E7EB" CornerRadius="12" Padding="2" HasShadow="False" BackgroundColor="#F3F4F6">
+                        <Grid ColumnDefinitions="*,*">
+                            <Button x:Name="DriverBtn" Text="Driver" Clicked="OnRoleDriverClicked" BackgroundColor="#1E3A8A" TextColor="White" FontAttributes="Bold" CornerRadius="10" Grid.Column="0" HeightRequest="45" Padding="0"/>
+                            <Button x:Name="AdminBtn" Text="Admin" Clicked="OnRoleAdminClicked" BackgroundColor="Transparent" TextColor="#6B7280" FontAttributes="Bold" CornerRadius="10" Grid.Column="1" HeightRequest="45" Padding="0"/>
+                        </Grid>
+                    </Frame>
+
                     <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Login]}" 
                            FontSize="24" 
                            TextColor="#111827"
                            HorizontalOptions="Center" 
-                           FontAttributes="Bold"/>
+                           FontAttributes="Bold"
+                           x:Name="LoginTitleLabel"/>
                            
                     <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[PhonePlaceholder]}" 
                            FontSize="14" 
                            TextColor="#6B7280"
                            HorizontalOptions="Center"
-                           HorizontalTextAlignment="Center"/>
+                           HorizontalTextAlignment="Center"
+                           x:Name="LoginSubtitleLabel"/>
 
                     <!-- Phone Number Input -->
-                    <Frame BorderColor="#E5E7EB" CornerRadius="12" Padding="5,0,5,0" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="60">
+                    <Frame x:Name="PhoneFrame" BorderColor="#E5E7EB" CornerRadius="12" Padding="5,0,5,0" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="60">
                         <Grid ColumnDefinitions="50,*">
                             <Label Text="&#xe0cd;" FontFamily="MaterialIcons" TextColor="#9CA3AF" FontSize="24" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="0"/>
                             <Entry x:Name="PhoneEntry"
@@ -79,11 +90,12 @@
                             Clicked="OnLoginClicked"
                             FontSize="18"
                             FontAttributes="Bold"
-                            BackgroundColor="#10B981"
+                            BackgroundColor="#1E3A8A"
                             TextColor="White"
                             CornerRadius="12"
                             HeightRequest="60"
-                            Margin="0,10,0,0"/>
+                            Margin="0,10,0,0"
+                            x:Name="SubmitLoginBtn"/>
                 </VerticalStackLayout>
             </Frame>
             
