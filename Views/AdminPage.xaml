@@ -1,12 +1,52 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:DeliveryApp.Models"
              x:Class="DeliveryApp.Views.AdminPage"
              Title="Admin ERP"
-             BackgroundColor="#1E3A8A">
+             BackgroundColor="#F3F4F6">
              
-    <Grid>
-        <WebView x:Name="AdminWebView" Source="http://192.168.31.175:5287/erp.html" HorizontalOptions="Fill" VerticalOptions="Fill" />
+    <Grid RowDefinitions="Auto,*">
+        
+        <!-- Header -->
+        <VerticalStackLayout Padding="20,20,20,20" BackgroundColor="#1E3A8A" Grid.Row="0">
+            <Label Text="Admin Control Panel" TextColor="White" FontSize="26" FontAttributes="Bold"/>
+            <Label Text="Manage orders natively" TextColor="#BFDBFE" FontSize="15" Margin="0,5,0,0"/>
+            
+            <Button Text="Create New Order" 
+                    Clicked="OnCreateOrderClicked" 
+                    BackgroundColor="#10B981" 
+                    TextColor="White" 
+                    FontAttributes="Bold"
+                    CornerRadius="8"
+                    HeightRequest="45"
+                    Margin="0,15,0,0"/>
+        </VerticalStackLayout>
+        
+        <!-- Orders List -->
+        <RefreshView x:Name="OrdersRefreshView" Refreshing="OnRefreshOrders" Grid.Row="1">
+            <CollectionView x:Name="AllOrdersCollection" Margin="15,10,15,0">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="15" Margin="0,100,0,0">
+                        <Label Text="&#xe8ad;" FontFamily="MaterialIcons" FontSize="60" TextColor="#9CA3AF" HorizontalOptions="Center" />
+                        <Label Text="No Orders Found" FontSize="18" TextColor="#6B7280" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Order">
+                        <Frame Margin="0,8" Padding="15" CornerRadius="12" HasShadow="True" BorderColor="Transparent" BackgroundColor="White">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                <Label Text="{Binding OrderId}" FontAttributes="Bold" FontSize="16" TextColor="#111827" Grid.Row="0" Grid.Column="0"/>
+                                <Label Text="{Binding Status}" TextColor="#D97706" FontSize="12" FontAttributes="Bold" Grid.Row="0" Grid.Column="1" HorizontalOptions="End"/>
+                                
+                                <Label Text="{Binding CustomerName}" FontSize="14" TextColor="#4B5563" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,0"/>
+                                <Label Text="{Binding DriverPhone, StringFormat='Driver: {0}'}" FontSize="12" TextColor="#6B7280" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"/>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
     </Grid>
 
 </ContentPage>
