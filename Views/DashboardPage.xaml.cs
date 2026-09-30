@@ -6,6 +6,7 @@ namespace DeliveryApp.Views;
 
 public partial class DashboardPage : ContentPage
 {
+    private List<Order> _allOrdersCache;
     public ObservableCollection<Order> Orders { get; set; }
     public ICommand ReachedLocationCommand { get; set; }
 
@@ -13,6 +14,7 @@ public partial class DashboardPage : ContentPage
     {
         InitializeComponent();
         
+        _allOrdersCache = new List<Order>();
         Orders = new ObservableCollection<Order>();
         ReachedLocationCommand = new Command<Order>(async (order) => await OnReachedLocation(order));
         BindingContext = this;
@@ -32,20 +34,108 @@ public partial class DashboardPage : ContentPage
             var apiService = new Services.ApiService();
             var fetchedOrders = await apiService.GetAssignedOrdersAsync(Preferences.Get("DriverPhone", ""));
             
-            Orders.Clear();
+            _allOrdersCache.Clear();
             if (fetchedOrders != null && fetchedOrders.Count > 0)
             {
-                foreach (var order in fetchedOrders)
-                {
-                    Orders.Add(order);
-                }
+                _allOrdersCache.AddRange(fetchedOrders);
             }
+            
+            FilterOrders("All");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to load orders: {ex.Message}");
+            _allOrdersCache.Clear();
             Orders.Clear();
         }
+    }
+
+    private void FilterOrders(string filter)
+    {
+        Orders.Clear();
+        foreach(var order in _allOrdersCache)
+        {
+            if (filter == "All")
+                Orders.Add(order);
+            else if (filter == "Pending" && order.Status != "Delivered")
+                Orders.Add(order);
+            else if (filter == "Completed" && order.Status == "Delivered")
+                Orders.Add(order);
+        }
+        
+        // Update badges
+        TabAllBadgeLabel.Text = _allOrdersCache.Count.ToString();
+        TabPendingBadgeLabel.Text = _allOrdersCache.Count(o => o.Status != "Delivered").ToString();
+        TabCompletedBadgeLabel.Text = _allOrdersCache.Count(o => o.Status == "Delivered").ToString();
+        
+        // Update Header Progress
+        int total = _allOrdersCache.Count;
+        int completed = _allOrdersCache.Count(o => o.Status == "Delivered");
+        
+        HeaderProgressText.Text = $"{completed} of {total} deliveries completed";
+        
+        if (total > 0)
+        {
+            double percentage = (double)completed / total;
+            int pct = (int)(percentage * 100);
+            HeaderProgressPercentage.Text = $"{pct}%";
+            
+            HeaderProgressGrid.ColumnDefinitions[0].Width = new GridLength(pct, GridUnitType.Star);
+            HeaderProgressGrid.ColumnDefinitions[1].Width = new GridLength(100 - pct, GridUnitType.Star);
+        }
+        else
+        {
+            HeaderProgressPercentage.Text = "0%";
+            HeaderProgressGrid.ColumnDefinitions[0].Width = new GridLength(0, GridUnitType.Star);
+            HeaderProgressGrid.ColumnDefinitions[1].Width = new GridLength(100, GridUnitType.Star);
+        }
+    }
+
+    private void UpdateTabStyles(Border selectedBorder, Label selectedLabel, Border selectedBadgeBorder, Label selectedBadgeLabel,
+                                 Border b1, Label l1, Border bb1, Label bl1,
+                                 Border b2, Label l2, Border bb2, Label bl2)
+    {
+        // Selected
+        selectedBorder.BackgroundColor = Color.FromArgb("#1E4ED8");
+        selectedLabel.TextColor = Colors.White;
+        selectedBadgeBorder.BackgroundColor = Colors.White;
+        selectedBadgeLabel.TextColor = Color.FromArgb("#1E4ED8");
+
+        // Unselected 1
+        b1.BackgroundColor = Color.FromArgb("#E5E7EB");
+        l1.TextColor = Color.FromArgb("#4B5563");
+        bb1.BackgroundColor = Color.FromArgb("#D1D5DB");
+        bl1.TextColor = Color.FromArgb("#4B5563");
+
+        // Unselected 2
+        b2.BackgroundColor = Color.FromArgb("#E5E7EB");
+        l2.TextColor = Color.FromArgb("#4B5563");
+        bb2.BackgroundColor = Color.FromArgb("#D1D5DB");
+        bl2.TextColor = Color.FromArgb("#4B5563");
+    }
+
+    private void OnTabAllClicked(object sender, TappedEventArgs e)
+    {
+        UpdateTabStyles(TabAllBorder, TabAllLabel, TabAllBadgeBorder, TabAllBadgeLabel,
+                        TabPendingBorder, TabPendingLabel, TabPendingBadgeBorder, TabPendingBadgeLabel,
+                        TabCompletedBorder, TabCompletedLabel, TabCompletedBadgeBorder, TabCompletedBadgeLabel);
+        FilterOrders("All");
+    }
+
+    private void OnTabPendingClicked(object sender, TappedEventArgs e)
+    {
+        UpdateTabStyles(TabPendingBorder, TabPendingLabel, TabPendingBadgeBorder, TabPendingBadgeLabel,
+                        TabAllBorder, TabAllLabel, TabAllBadgeBorder, TabAllBadgeLabel,
+                        TabCompletedBorder, TabCompletedLabel, TabCompletedBadgeBorder, TabCompletedBadgeLabel);
+        FilterOrders("Pending");
+    }
+
+    private void OnTabCompletedClicked(object sender, TappedEventArgs e)
+    {
+        UpdateTabStyles(TabCompletedBorder, TabCompletedLabel, TabCompletedBadgeBorder, TabCompletedBadgeLabel,
+                        TabAllBorder, TabAllLabel, TabAllBadgeBorder, TabAllBadgeLabel,
+                        TabPendingBorder, TabPendingLabel, TabPendingBadgeBorder, TabPendingBadgeLabel);
+        FilterOrders("Completed");
     }
 
     private async Task OnReachedLocation(Order order)
@@ -71,7 +161,7 @@ public partial class DashboardPage : ContentPage
         }
     }
 
-    private async void OnLogoutClicked(object sender, EventArgs e)
+    private async void OnLogoutClicked(object sender, TappedEventArgs e)
     {
         var t = Services.LocalizationManager.Instance;
         bool confirm = await DisplayAlert(t["Logout"], t["LogoutConfirm"], t["Yes"], t["No"]);

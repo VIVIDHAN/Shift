@@ -4,101 +4,104 @@
              xmlns:services="clr-namespace:DeliveryApp.Services"
              x:Class="DeliveryApp.Views.LoginPage"
              NavigationPage.HasNavigationBar="False"
-             BackgroundColor="#F3F4F6">
+             BackgroundColor="White">
     <Shell.NavBarIsVisible>False</Shell.NavBarIsVisible>
     
-    <Grid BackgroundColor="#F3F4F6">
-        <!-- Language Toggle -->
-        <HorizontalStackLayout HorizontalOptions="End" VerticalOptions="Start" Margin="20,50,20,0" Spacing="8">
-            <Label Text="English" TextColor="#4B5563" VerticalOptions="Center" FontSize="14" FontAttributes="Bold" />
-            <Switch x:Name="LanguageToggle" Toggled="OnLanguageToggled" OnColor="#1E3A8A" ThumbColor="White" />
-            <Label Text="தமிழ்" TextColor="#4B5563" VerticalOptions="Center" FontSize="14" FontAttributes="Bold" />
-        </HorizontalStackLayout>
+    <Grid>
+        <!-- Background Image -->
+        <Image Source="backgroundlogin.png" Aspect="AspectFill" VerticalOptions="Fill" HorizontalOptions="Fill"/>
 
-        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="25" Padding="20">
-            
-            <!-- Logo Section -->
-            <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
-                <Label Text="&#xe558;" FontFamily="MaterialIcons" TextColor="#1E3A8A" FontSize="80" HorizontalOptions="Center"/>
-                <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[AppTitle]}" TextColor="#1E3A8A" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center" CharacterSpacing="2"/>
-            </VerticalStackLayout>
-            
-            <!-- Login Card -->
-            <Frame BackgroundColor="White" 
-                   CornerRadius="25" 
-                   Padding="25,25,25,35" 
-                   HasShadow="True" 
-                   BorderColor="Transparent"
-                   WidthRequest="340">
-                   
-                <VerticalStackLayout Spacing="25">
+        <!-- Main Content -->
+        <ScrollView>
+            <VerticalStackLayout Padding="20, 50, 20, 40">
+                
+                <!-- Language Toggle (Top Right) -->
+                <Border Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 20" HorizontalOptions="End" BackgroundColor="White" HeightRequest="36" WidthRequest="120">
+                    <Grid ColumnDefinitions="*, 1, *">
+                        <Border x:Name="EnBorder" Grid.Column="0" BackgroundColor="#1E4ED8" StrokeThickness="0" StrokeShape="RoundRectangle 20,0,20,0" Margin="-1">
+                            <Label x:Name="EnLabel" Text="EN" TextColor="White" VerticalOptions="Center" HorizontalOptions="Center" FontSize="12" FontAttributes="Bold">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnLanguageToggledAlt"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Border>
+                        <BoxView Grid.Column="1" Color="#E5E7EB" WidthRequest="1" VerticalOptions="Fill"/>
+                        <Border x:Name="TaBorder" Grid.Column="2" BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 0,20,0,20" Margin="-1">
+                            <Label x:Name="TaLabel" Text="தமிழ்" TextColor="#4B5563" VerticalOptions="Center" HorizontalOptions="Center" FontSize="12" FontAttributes="Bold">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnLanguageToggledAlt"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Logo -->
+                <Image Source="shiftdelivery.png" HeightRequest="150" HorizontalOptions="Center" Margin="0, 30, 0, 0" />
+
+                <!-- Titles -->
+                <Label Text="Welcome back, driver!" FontSize="22" FontAttributes="Bold" TextColor="#111827" HorizontalOptions="Center" Margin="0,20,0,5" x:Name="LoginTitleLabel" />
+                <Label Text="Login to continue your deliveries" FontSize="14" TextColor="#6B7280" HorizontalOptions="Center" Margin="0,0,0,30" x:Name="LoginSubtitleLabel" />
+
+                <VerticalStackLayout Spacing="15" WidthRequest="340" HorizontalOptions="Center">
                     
-                    <!-- Role Switcher -->
-                    <Frame BorderColor="#E5E7EB" CornerRadius="12" Padding="2" HasShadow="False" BackgroundColor="#F3F4F6">
-                        <Grid ColumnDefinitions="*,*">
-                            <Button x:Name="DriverBtn" Text="Driver" Clicked="OnRoleDriverClicked" BackgroundColor="#1E3A8A" TextColor="White" FontAttributes="Bold" CornerRadius="10" Grid.Column="0" HeightRequest="45" Padding="0"/>
-                            <Button x:Name="AdminBtn" Text="Admin" Clicked="OnRoleAdminClicked" BackgroundColor="Transparent" TextColor="#6B7280" FontAttributes="Bold" CornerRadius="10" Grid.Column="1" HeightRequest="45" Padding="0"/>
-                        </Grid>
-                    </Frame>
-
-                    <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Login]}" 
-                           FontSize="24" 
-                           TextColor="#111827"
-                           HorizontalOptions="Center" 
-                           FontAttributes="Bold"
-                           x:Name="LoginTitleLabel"/>
-                           
-                    <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[PhonePlaceholder]}" 
-                           FontSize="14" 
-                           TextColor="#6B7280"
-                           HorizontalOptions="Center"
-                           HorizontalTextAlignment="Center"
-                           x:Name="LoginSubtitleLabel"/>
-
                     <!-- Phone Number Input -->
-                    <Frame x:Name="PhoneFrame" BorderColor="#E5E7EB" CornerRadius="12" Padding="5,0,5,0" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="60">
-                        <Grid ColumnDefinitions="50,*">
-                            <Label Text="&#xe0cd;" FontFamily="MaterialIcons" TextColor="#9CA3AF" FontSize="24" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="0"/>
-                            <Entry x:Name="PhoneEntry"
-                                   Placeholder="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[PhonePlaceholder]}"
-                                   Keyboard="Telephone"
-                                   FontSize="18"
-                                   TextColor="#111827"
-                                   PlaceholderColor="#9CA3AF"
-                                   Grid.Column="1"
-                                   VerticalOptions="Center"/>
+                    <Border Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="White" HeightRequest="60" Padding="15,0">
+                        <Grid ColumnDefinitions="Auto, Auto, Auto, 1, *, 30" ColumnSpacing="8">
+                            <!-- Flag -->
+                            <Label Text="🇮🇳" FontSize="20" VerticalOptions="Center" Grid.Column="0" />
+                            <Label Text="+91" FontSize="16" TextColor="#111827" VerticalOptions="Center" Grid.Column="1" />
+                            <Label Text="&#xe313;" FontFamily="MaterialIcons" FontSize="20" TextColor="#6B7280" VerticalOptions="Center" Grid.Column="2" />
+                            
+                            <!-- Divider -->
+                            <BoxView Grid.Column="3" WidthRequest="1" Color="#E5E7EB" VerticalOptions="Center" HeightRequest="30" />
+
+                            <Entry x:Name="PhoneEntry" Grid.Column="4" Placeholder="Enter mobile number" Keyboard="Telephone" TextColor="#111827" BackgroundColor="Transparent" FontSize="16" Margin="5,0,0,0" VerticalOptions="Center" VerticalTextAlignment="Center"/>
+                            
+                            <Label Text="&#xe0cd;" FontFamily="MaterialIcons" FontSize="22" TextColor="#9CA3AF" VerticalOptions="Center" Grid.Column="5" HorizontalOptions="End"/>
                         </Grid>
-                    </Frame>
+                    </Border>
 
                     <!-- Password Input -->
-                    <Frame BorderColor="#E5E7EB" CornerRadius="12" Padding="5,0,5,0" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="60">
-                        <Grid ColumnDefinitions="50,*">
-                            <Label Text="&#xe897;" FontFamily="MaterialIcons" TextColor="#9CA3AF" FontSize="24" VerticalOptions="Center" HorizontalOptions="Center" Grid.Column="0"/>
-                            <Entry x:Name="PasswordEntry"
-                                   Placeholder="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[PasswordPlaceholder]}"
-                                   IsPassword="True"
-                                   FontSize="18"
-                                   TextColor="#111827"
-                                   PlaceholderColor="#9CA3AF"
-                                   Grid.Column="1"
-                                   VerticalOptions="Center"/>
+                    <Border Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="White" HeightRequest="60" Padding="15,0" Margin="0,0,0,15">
+                        <Grid ColumnDefinitions="30, *, 30">
+                            <Label Text="&#xe897;" FontFamily="MaterialIcons" FontSize="22" TextColor="#9CA3AF" VerticalOptions="Center" Grid.Column="0"/>
+                            <Entry x:Name="PasswordEntry" Grid.Column="1" Placeholder="Enter password" IsPassword="True" TextColor="#111827" BackgroundColor="Transparent" FontSize="16" VerticalOptions="Center" VerticalTextAlignment="Center"/>
+                            <Label x:Name="TogglePasswordLabel" Text="&#xe8f4;" FontFamily="MaterialIcons" FontSize="22" TextColor="#9CA3AF" VerticalOptions="Center" Grid.Column="2" HorizontalOptions="End">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTogglePasswordClicked"/>
+                                </Label.GestureRecognizers>
+                            </Label>
                         </Grid>
-                    </Frame>
+                    </Border>
 
                     <!-- Login Button -->
-                    <Button Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Login]}"
-                            Clicked="OnLoginClicked"
-                            FontSize="18"
-                            FontAttributes="Bold"
-                            BackgroundColor="#1E3A8A"
-                            TextColor="White"
-                            CornerRadius="12"
-                            HeightRequest="60"
-                            Margin="0,10,0,0"
-                            x:Name="SubmitLoginBtn"/>
+                    <Border x:Name="SubmitLoginBtn" StrokeThickness="0" BackgroundColor="#1E4ED8" StrokeShape="RoundRectangle 12" HeightRequest="60">
+                        <Border.Shadow>
+                            <Shadow Brush="#1E4ED8" Offset="0,4" Opacity="0.3" Radius="8"/>
+                        </Border.Shadow>
+                        <Grid>
+                            <Label x:Name="LoginBtnLabel" Text="Login" TextColor="White" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Border BackgroundColor="#3B82F6" StrokeThickness="0" StrokeShape="RoundRectangle 20" WidthRequest="40" HeightRequest="40" HorizontalOptions="End" VerticalOptions="Center" Opacity="0.8" Margin="0,0,10,0">
+                                <Label Text="&#xe5c8;" FontFamily="MaterialIcons" TextColor="White" FontSize="24" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLoginClicked"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <!-- Success Animation view (hidden by default) -->
+                    <VerticalStackLayout x:Name="SuccessAnimView" IsVisible="False" Spacing="10" HorizontalOptions="Center" Margin="0,15,0,0" HeightRequest="56" VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label Text="&#xe86c;" FontFamily="MaterialIcons" TextColor="#10B981" FontSize="28" VerticalOptions="Center"/>
+                            <Label Text="Success!" TextColor="#10B981" FontSize="18" FontAttributes="Bold" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                    
                 </VerticalStackLayout>
-            </Frame>
-            
-        </VerticalStackLayout>
+                
+            </VerticalStackLayout>
+        </ScrollView>
     </Grid>
 </ContentPage>

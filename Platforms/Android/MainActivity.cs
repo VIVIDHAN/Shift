@@ -13,10 +13,10 @@ public class MainActivity : MauiAppCompatActivity
         
         if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
         {
-            // Set status bar to Deep Blue (#1E3A8A) with white text/icons
+            // Set status bar to Deep Blue (#1E4ED8) with white text/icons
             Window.ClearFlags(Android.Views.WindowManagerFlags.TranslucentStatus);
             Window.AddFlags(Android.Views.WindowManagerFlags.DrawsSystemBarBackgrounds);
-            Window.SetStatusBarColor(Android.Graphics.Color.ParseColor("#1E3A8A"));
+            Window.SetStatusBarColor(Android.Graphics.Color.ParseColor("#1E4ED8"));
             
             // Remove LightStatusBar so the text/icons stay white (default for dark backgrounds)
             Window.DecorView.SystemUiVisibility = 0; 

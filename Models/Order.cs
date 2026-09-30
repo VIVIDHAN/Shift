@@ -11,6 +11,10 @@ namespace DeliveryApp.Models
         public DateTime OrderDate { get; set; }
         public string Status { get; set; } // "Assigned", "Delivered"
         public string DriverPhone { get; set; }
+        public string BillPhotoUrl { get; set; }
+        public string DeliveryPhotoUrl { get; set; }
+        public bool HasBillPhoto => !string.IsNullOrEmpty(BillPhotoUrl);
+        public bool IsAssigned => Status == "Assigned";
     }
 
     public class ShopSettings

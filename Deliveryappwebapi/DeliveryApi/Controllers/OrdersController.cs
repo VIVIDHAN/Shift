@@ -27,7 +27,8 @@ namespace DeliveryApi.Controllers
             }
 
             var orders = await _context.Orders
-                .Where(o => o.DriverPhone == request.driverPhone && o.Status == "Assigned")
+                .Where(o => o.DriverPhone == request.driverPhone && (o.Status == "Assigned" || o.Status == "Delivered"))
+                .OrderByDescending(o => o.OrderId)
                 .ToListAsync();
 
             return Ok(orders);
@@ -55,7 +56,7 @@ namespace DeliveryApi.Controllers
             {
                 try
                 {
-                    string bucketName = "shiftappimagesfolder";
+                    string bucketName = "shiftapp-images-store";
                     var fileName = $"{orderId}_{DateTime.Now.Ticks}.jpg";
 
                     // Using AWSSDK.S3 (Ensure your AWS credentials are fixed in ~/.aws/credentials)
@@ -63,6 +64,7 @@ namespace DeliveryApi.Controllers
                     
                     using var newMemoryStream = new MemoryStream();
                     await photo.CopyToAsync(newMemoryStream);
+                    newMemoryStream.Position = 0;
                     
                     var uploadRequest = new Amazon.S3.Model.PutObjectRequest
                     {
@@ -80,7 +82,7 @@ namespace DeliveryApi.Controllers
                 catch (Exception ex)
                 {
                     Console.WriteLine($"AWS S3 Upload Failed: {ex.Message}");
-                    // We can still mark as delivered even if photo fails, or return error
+                    return StatusCode(500, "AWS S3 Upload Error: " + ex.Message);
                 }
             }
 
@@ -91,7 +93,7 @@ namespace DeliveryApi.Controllers
 
         // POST: api/orders/create
         [HttpPost("create")]
-        public async Task<IActionResult> CreateOrder([FromBody] Order newOrder)
+        public async Task<IActionResult> CreateOrder([FromForm] Order newOrder, IFormFile billPhoto)
         {
             if (newOrder == null || string.IsNullOrEmpty(newOrder.CustomerName))
             {
@@ -102,6 +104,38 @@ namespace DeliveryApi.Controllers
             newOrder.OrderId = "ORD-" + new Random().Next(1000, 9999);
             newOrder.Status = "Assigned";
             newOrder.OrderDate = DateTime.Now;
+
+            // Upload bill photo to AWS S3 if provided
+            if (billPhoto != null && billPhoto.Length > 0)
+            {
+                try
+                {
+                    string bucketName = "shiftapp-images-store";
+                    var fileName = $"bill_{newOrder.OrderId}_{DateTime.Now.Ticks}.jpg";
+
+                    using var amazonS3Client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.APSouth1);
+                    using var newMemoryStream = new MemoryStream();
+                    await billPhoto.CopyToAsync(newMemoryStream);
+                    newMemoryStream.Position = 0;
+                    
+                    var uploadRequest = new Amazon.S3.Model.PutObjectRequest
+                    {
+                        InputStream = newMemoryStream,
+                        BucketName = bucketName,
+                        Key = fileName,
+                        ContentType = billPhoto.ContentType ?? "image/jpeg"
+                    };
+                    
+                    await amazonS3Client.PutObjectAsync(uploadRequest);
+                    newOrder.BillPhotoUrl = $"https://{bucketName}.s3.{Amazon.RegionEndpoint.APSouth1.SystemName}.amazonaws.com/{fileName}";
+                }
+                catch (Exception ex)
+                {
+                    // Return error so the frontend knows S3 failed
+                    Console.WriteLine("S3 Upload Failed: " + ex.Message);
+                    return StatusCode(500, "AWS S3 Upload Error: " + ex.Message);
+                }
+            }
 
             _context.Orders.Add(newOrder);
             await _context.SaveChangesAsync();

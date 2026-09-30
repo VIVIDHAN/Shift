@@ -13,12 +13,30 @@ public partial class DeliveryPage : ContentPage
     {
         InitializeComponent();
         _currentOrder = order;
-
-        var t = Services.LocalizationManager.Instance;
-        OrderIdLabel.Text = $"Order ID: {order.OrderId}";
-        ItemsLabel.Text = $"{t["Items"]}: {order.Items}";
-        CustomerLabel.Text = $"{t["Customer"]}: {order.CustomerName}";
-        LocationLabel.Text = $"{t["Location"]}: {order.Location}";
+        BindingContext = _currentOrder;
+    }
+    
+    private async void OnBackTapped(object sender, TappedEventArgs e)
+    {
+        await Navigation.PopAsync();
+    }
+    
+    private async void OnMapsTapped(object sender, TappedEventArgs e)
+    {
+        if (_currentOrder == null || string.IsNullOrWhiteSpace(_currentOrder.Location)) return;
+        
+        try
+        {
+            var options = new MapLaunchOptions { Name = _currentOrder.CustomerName };
+            await Map.Default.OpenAsync(new Placemark
+            {
+                Thoroughfare = _currentOrder.Location
+            }, options);
+        }
+        catch (Exception)
+        {
+            await DisplayAlert("Error", "Could not open Maps.", "OK");
+        }
     }
 
     private async void OnClickPhotoClicked(object sender, EventArgs e)
@@ -34,6 +52,14 @@ public partial class DeliveryPage : ContentPage
                     var stream = await _photoResult.OpenReadAsync();
                     CapturedImage.Source = ImageSource.FromStream(() => stream);
                     CapturedImage.IsVisible = true;
+                    PhotoPlaceholder.IsVisible = false;
+                    PhotoBorder.StrokeDashArray = null; // Solid border once captured
+                    
+                    // Enable submit button
+                    SubmitBtn.IsEnabled = true;
+                    SubmitBtn.BackgroundColor = Color.FromArgb("#10B981"); // Green
+                    SubmitHelpText.IsVisible = false;
+                    TakePhotoBtn.Text = "Retake Photo";
                 }
             }
             else
@@ -57,6 +83,7 @@ public partial class DeliveryPage : ContentPage
 
         LoadingIndicator.IsVisible = true;
         LoadingIndicator.IsRunning = true;
+        SubmitBtn.IsEnabled = false;
 
         try
         {
@@ -77,6 +104,7 @@ public partial class DeliveryPage : ContentPage
             if (!dbSuccess)
             {
                 await DisplayAlert("Error", "Failed to update database. Please try again.", "OK");
+                SubmitBtn.IsEnabled = true;
                 return;
             }
 
@@ -155,6 +183,7 @@ public partial class DeliveryPage : ContentPage
         catch (Exception ex)
         {
             await DisplayAlert("Error", $"Submission failed: {ex.Message}", "OK");
+            SubmitBtn.IsEnabled = true;
         }
         finally
         {

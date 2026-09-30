@@ -106,15 +106,13 @@ namespace DeliveryApp.Services
         {
             try
             {
-                var payload = new { 
-                    CustomerName = customerName,
-                    CustomerPhone = customerPhone,
-                    Location = location,
-                    Items = items,
-                    DriverPhone = driverPhone
-                };
-                string jsonPayload = JsonSerializer.Serialize(payload);
-                var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+                var content = new MultipartFormDataContent();
+                content.Add(new StringContent(customerName ?? ""), "CustomerName");
+                content.Add(new StringContent(customerPhone ?? ""), "CustomerPhone");
+                content.Add(new StringContent(location ?? ""), "Location");
+                content.Add(new StringContent(items ?? ""), "Items");
+                content.Add(new StringContent(driverPhone ?? ""), "DriverPhone");
+
                 var response = await _httpClient.PostAsync(_baseUrl + "orders/create", content);
                 return response.IsSuccessStatusCode;
             }

@@ -40,13 +40,12 @@
         .nav-link.active { background-color: #2563EB; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .main-content { margin-left: 260px; padding: 32px; }
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 24px; }
-        /* Table styles */
-        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
-        th { text-align: left; padding: 12px 16px; color: #6B7280; font-size: 12px; text-transform: uppercase; font-weight: 600; }
-        td { padding: 16px; background: white; border-top: 1px solid #E5E7EB; border-bottom: 1px solid #E5E7EB; }
-        td:first-child { border-left: 1px solid #E5E7EB; border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
-        td:last-child { border-right: 1px solid #E5E7EB; border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-        tr:hover td { background-color: #F9FAFB; }
+        /* Modern Table styles */
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { padding: 16px; color: #6B7280; font-size: 12px; text-transform: uppercase; font-weight: 600; background-color: #F9FAFB; border-bottom: 1px solid #E5E7EB; border-top: 1px solid #E5E7EB; }
+        td { padding: 16px; background: white; border-bottom: 1px solid #E5E7EB; color: #374151; font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #F3F4F6; }
         /* Forms */
         input, select, textarea { width: 100%; padding: 10px 14px; border: 1px solid #E5E7EB; border-radius: 8px; background-color: #F9FAFB; outline: none; transition: all 0.2s; font-size: 14px; }
         input:focus, select:focus, textarea:focus { border-color: #1E3A8A; background-color: white; box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1); }
@@ -66,18 +65,23 @@
 <body>
     
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="p-6 text-center">
-            <h3 class="text-2xl font-bold tracking-wide"><i class="fas fa-truck-fast mr-2"></i>Shift Logistics</h3>
+    <div class="sidebar flex flex-col">
+        <div class="p-8 text-center border-b border-blue-800 border-opacity-50 mb-4">
+            <h3 class="text-3xl font-extrabold tracking-wide leading-tight flex flex-col items-center justify-center text-white">
+                <div><i class="fas fa-truck-fast mr-2"></i>Shift</div>
+                <div>Logistics</div>
+            </h3>
         </div>
-        <ul class="mt-4">
-            <li><a class="nav-link active" onclick="showTab('dashboard')"><i class="fas fa-chart-line w-6"></i> Dashboard</a></li>
-            <li><a class="nav-link" onclick="showTab('orders')"><i class="fas fa-box-open w-6"></i> Orders</a></li>
-            <li><a class="nav-link" onclick="showTab('drivers')"><i class="fas fa-users w-6"></i> Drivers</a></li>
-            <li><a class="nav-link" onclick="showTab('settings')"><i class="fas fa-cog w-6"></i> Settings</a></li>
+        <ul class="flex-1 px-4 space-y-2">
+            <li><a class="nav-link active flex items-center" onclick="showTab('dashboard')"><i class="fas fa-chart-line w-8 text-center"></i> Dashboard</a></li>
+            <li><a class="nav-link flex items-center" onclick="showTab('orders')"><i class="fas fa-box w-8 text-center"></i> Orders</a></li>
+            <li><a class="nav-link flex items-center" onclick="showTab('drivers')"><i class="fas fa-user-group w-8 text-center"></i> Drivers</a></li>
+            <li><a class="nav-link flex items-center" onclick="showTab('settings')"><i class="fas fa-gear w-8 text-center"></i> Settings</a></li>
         </ul>
-        <div class="absolute bottom-10 left-0 w-full px-4">
-            <button onclick="logoutAdmin()" class="w-full text-left nav-link text-red-300 hover:text-red-100"><i class="fas fa-sign-out-alt w-6"></i> Logout</button>
+        <div class="p-4 mt-auto border-t border-blue-800 border-opacity-50">
+            <button onclick="logoutAdmin()" class="w-full text-left nav-link flex items-center text-red-300 hover:text-red-100 hover:bg-red-900 hover:bg-opacity-20 transition-colors">
+                <i class="fas fa-arrow-right-from-bracket w-8 text-center"></i> Logout
+            </button>
         </div>
     </div>
 
@@ -140,37 +144,130 @@
         <div id="tab-orders" class="erp-tab hidden">
             <h2 class="text-3xl font-bold text-gray-900 mb-8">Manage Orders</h2>
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <div class="card col-span-1">
-                    <h4 class="text-lg font-bold mb-4">Create New Order</h4>
-                    <form id="createOrderForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Assign Driver</label>
-                            <select id="newOrderDriver" required></select>
+            <div class="flex flex-col gap-8 mb-8">
+                <!-- Create Order Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden w-full max-w-4xl">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center">
+                        <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-box-open text-blue-600"></i>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Customer Name</label>
-                            <input type="text" id="newOrderCustomer" required>
+                            <h3 class="text-lg font-semibold text-gray-900">Create New Order</h3>
+                            <p class="text-sm text-gray-500">Dispatch a new delivery</p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Customer Phone</label>
-                            <input type="text" id="newOrderPhone" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Delivery Address</label>
-                            <input type="text" id="newOrderLocation" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Items to Deliver</label>
-                            <input type="text" id="newOrderItems" required>
-                        </div>
-                        <button type="submit" class="btn-primary w-full mt-2">Dispatch Order</button>
-                    </form>
+                    </div>
+                    
+                    <div class="p-6">
+                        <form id="createOrderForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-end">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Assign Driver</label>
+                                <select id="newOrderDriver" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 p-2 border" required></select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                                <input type="text" id="newOrderCustomer" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 p-2 border" placeholder="John Doe" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Customer Phone</label>
+                                <input type="text" id="newOrderPhone" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 p-2 border" placeholder="e.g. 9876543210" required>
+                            </div>
+                            <div class="lg:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+                                <input type="text" id="newOrderLocation" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 p-2 border" placeholder="123 Main St..." required>
+                            </div>
+                            <div class="lg:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Items to Deliver <span class="text-gray-400 font-normal">(Optional)</span></label>
+                                
+                                <div id="selectedItemsDisplay" class="flex flex-wrap gap-2 mb-3"></div>
+                                
+                                <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                    <div class="flex gap-4 mb-4 border-b border-gray-200 pb-2" id="categoryTabs">
+                                        <button type="button" onclick="selCategory('Cement')" id="tabCement" class="font-bold text-blue-600 border-b-2 border-blue-600 pb-1 px-2"><i class="fas fa-layer-group text-blue-500 mr-1"></i> Cement</button>
+                                        <button type="button" onclick="selCategory('Steel')" id="tabSteel" class="font-bold text-gray-500 pb-1 px-2 hover:text-gray-700"><i class="fas fa-bars text-gray-400 mr-1"></i> Steel</button>
+                                    </div>
+                                    
+                                    <div id="brandsGrid" class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4"></div>
+                                    
+                                    <div id="typeSelection" class="hidden mb-4 overflow-x-auto">
+                                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Select Type</label>
+                                        <div class="flex gap-2 mt-2 pb-2 min-w-max" id="typesGrid">
+                                            <button type="button" onclick="selType('OPC')" id="typeOPC" class="px-4 py-2 border rounded-md text-sm font-medium bg-white hover:bg-blue-50">OPC</button>
+                                            <button type="button" onclick="selType('PPC')" id="typePPC" class="px-4 py-2 border rounded-md text-sm font-medium bg-white hover:bg-blue-50">PPC</button>
+                                            <button type="button" onclick="selType('SUPER')" id="typeSUPER" class="px-4 py-2 border rounded-md text-sm font-medium bg-white hover:bg-blue-50">SUPER</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="sizeSelection" class="hidden mb-4 overflow-x-auto">
+                                        <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Select Size (Steel)</label>
+                                        <div class="flex gap-2 mt-2 pb-2 min-w-max" id="sizesGrid">
+                                            <button type="button" onclick="selSize('8mm')" id="size8mm" class="px-4 py-2 border rounded-md text-sm font-medium bg-white hover:bg-blue-50">8mm</button>
+                                            <button type="button" onclick="selSize('10mm')" id="size10mm" class="px-4 py-2 border rounded-md text-sm font-medium bg-white hover:bg-blue-50">10mm</button>
+                                            <button type="button" onclick="selSize('12mm')" id="size12mm" class="px-4 py-2 border rounded-md text-sm font-medium bg-white hover:bg-blue-50">12mm</button>
+                                            <button type="button" onclick="selSize('16mm')" id="size16mm" class="px-4 py-2 border rounded-md text-sm font-medium bg-white hover:bg-blue-50">16mm</button>
+                                            <button type="button" onclick="selSize('20mm')" id="size20mm" class="px-4 py-2 border rounded-md text-sm font-medium bg-white hover:bg-blue-50">20mm</button>
+                                            <button type="button" onclick="selSize('25mm')" id="size25mm" class="px-4 py-2 border rounded-md text-sm font-medium bg-white hover:bg-blue-50">25mm</button>
+                                            <button type="button" onclick="selSize('32mm')" id="size32mm" class="px-4 py-2 border rounded-md text-sm font-medium bg-white hover:bg-blue-50">32mm</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-3 mt-4 pt-4 border-t border-gray-200">
+                                        <div class="flex items-center border rounded-md bg-white overflow-hidden">
+                                            <button type="button" onclick="adjQty(-1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 border-r">-</button>
+                                            <input type="number" id="builderQty" value="1" min="1" class="w-16 text-center py-1 outline-none font-bold">
+                                            <button type="button" onclick="adjQty(1)" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 border-l">+</button>
+                                        </div>
+                                        <button type="button" onclick="addBuiltItem()" class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-md font-bold hover:bg-indigo-200 transition-colors flex-1 md:flex-none">
+                                            <i class="fas fa-plus mr-1"></i> Add to Order
+                                        </button>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="newOrderItems">
+                            </div>
+                            
+                            <div class="lg:col-span-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bill Photo <span class="text-red-500">*</span></label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex justify-center items-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onclick="document.getElementById('newOrderBillPhoto').click()">
+                                    <div class="text-center">
+                                        <i class="fas fa-file-invoice text-4xl text-gray-400 mb-2"></i>
+                                        <p class="text-sm text-gray-600 font-medium" id="billPhotoLabel">Click to select bill image</p>
+                                    </div>
+                                    <input type="file" id="newOrderBillPhoto" accept="image/*" class="hidden" required onchange="document.getElementById('billPhotoLabel').innerText = this.files[0] ? this.files[0].name : 'Click to select bill image'; document.getElementById('billPhotoLabel').classList.add('text-blue-600')">
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-3 flex justify-end mt-2 border-t border-gray-100 pt-4">
+                                <button type="submit" id="btnDispatchOrder" class="bg-blue-600 text-white px-8 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all duration-300 flex items-center">
+                                    <i class="fas fa-paper-plane mr-2"></i> Dispatch Order
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 
-                <div class="card col-span-2 overflow-auto" style="max-height: 600px;">
-                    <h4 class="text-lg font-bold mb-4">Order History</h4>
-                    <div id="ordersGrid"></div>
+                <!-- Order History Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden w-full">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                                <i class="fas fa-list-alt text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Order Database</h3>
+                                <p class="text-sm text-gray-500">View and manage all dispatched orders</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" id="filterOrderSearch" placeholder="Search orders..." class="border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-sm p-2 border" onkeyup="applyOrderFilters()">
+                            <select id="filterOrderDriver" class="border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-sm p-2 border" onchange="applyOrderFilters()">
+                                <option value="">All Drivers</option>
+                            </select>
+                            <input type="date" id="filterOrderDate" class="border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-sm p-2 border" onchange="applyOrderFilters()">
+                            <button onclick="clearOrderFilters()" class="bg-gray-200 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-300 text-sm font-medium"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    <div class="p-0 overflow-x-auto">
+                        <div id="ordersGrid"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -179,65 +276,151 @@
         <div id="tab-drivers" class="erp-tab hidden">
             <h2 class="text-3xl font-bold text-gray-900 mb-8">Manage Drivers</h2>
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <div class="card col-span-1">
-                    <h4 class="text-lg font-bold mb-4">Add New Driver</h4>
-                    <form id="createDriverForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Driver Full Name</label>
-                            <input type="text" id="newDriverName" required placeholder="e.g. John Smith">
+            <div class="flex flex-col gap-8 mb-8">
+                <!-- Add Driver Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden w-full max-w-4xl">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center">
+                        <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-user-plus text-blue-600"></i>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Driver Phone</label>
-                            <input type="text" id="newDriverPhone" required placeholder="e.g. 555-0100">
+                            <h3 class="text-lg font-semibold text-gray-900">Add New Driver</h3>
+                            <p class="text-sm text-gray-500">Register a new delivery partner</p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Driver Password</label>
-                            <input type="password" id="newDriverPassword" required placeholder="Enter secure password">
-                        </div>
-                        <button type="submit" class="btn-primary w-full mt-2">Save Driver</button>
-                    </form>
+                    </div>
+                    
+                    <div class="p-6">
+                        <form id="createDriverForm" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Driver Full Name</label>
+                                <input type="text" id="newDriverName" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 p-2 border" required placeholder="e.g. John Smith">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Driver Phone</label>
+                                <input type="text" id="newDriverPhone" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 p-2 border" required placeholder="e.g. 555-0100">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Driver Password</label>
+                                <input type="password" id="newDriverPassword" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 p-2 border" required placeholder="Enter secure password">
+                            </div>
+                            <div class="md:col-span-3 flex justify-end pt-2 border-t border-gray-100 mt-2">
+                                <button type="submit" id="btnRegisterDriver" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all duration-300">
+                                    Register Driver
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 
-                <div class="card col-span-2 overflow-auto" style="max-height: 600px;">
-                    <h4 class="text-lg font-bold mb-4">Driver Database</h4>
-                    <div id="driversGrid"></div>
+                <!-- Driver Database Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden w-full">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center">
+                        <div class="bg-indigo-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-database text-indigo-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Driver Directory</h3>
+                            <p class="text-sm text-gray-500">View and manage all registered drivers</p>
+                        </div>
+                    </div>
+                    <div class="p-0 overflow-x-auto">
+                        <!-- We will style the table injected here globally -->
+                        <div id="driversGrid" class="w-full min-w-full custom-table-wrapper"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- SETTINGS TAB -->
+        <!-- SETTINGS TAB -->
         <div id="tab-settings" class="erp-tab hidden">
             <h2 class="text-3xl font-bold text-gray-900 mb-8">Shop Settings</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="card">
-                    <h4 class="text-lg font-bold mb-2">Shop Details</h4>
-                    <p class="text-sm text-gray-500 mb-6">These details will be universally applied to all deliveries.</p>
-                    <form id="updateSettingsForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Shop Name</label>
-                            <input type="text" id="settingShopName" required disabled>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Shop Details Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center">
+                        <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-store text-blue-600"></i>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Shop Admin Phone</label>
-                            <input type="text" id="settingShopPhone" required disabled>
+                            <h3 class="text-lg font-semibold text-gray-900">Shop Profile</h3>
+                            <p class="text-sm text-gray-500">Manage business information</p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Shop Address</label>
-                            <textarea id="settingShopAddress" rows="2" disabled></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-1">SMS Delivery Template</label>
-                            <p class="text-xs text-gray-500 mb-1">Use {OrderId}, {CustomerName}, and {Items} as placeholders.</p>
-                            <textarea id="settingSmsTemplate" rows="3" disabled></textarea>
-                        </div>
-                        
-                        <div class="flex gap-4 pt-2">
-                            <button type="button" id="btnUnlockSettings" class="btn-primary w-full" onclick="unlockSettings()">Modify Settings</button>
-                            <button type="submit" id="btnSaveSettings" class="btn-success w-full" style="display: none;">Save Settings</button>
-                        </div>
-                    </form>
+                    </div>
+                    
+                    <div class="p-6">
+                        <form id="updateSettingsForm" class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
+                                <input type="text" id="settingShopName" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 bg-gray-50 p-2 border" required disabled>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Shop Admin Phone</label>
+                                <input type="text" id="settingShopPhone" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 bg-gray-50 p-2 border" required disabled>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Shop Address</label>
+                                <textarea id="settingShopAddress" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 bg-gray-50 p-2 border" disabled></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">SMS Delivery Template</label>
+                                <p class="text-xs text-blue-500 mb-2 font-medium">Placeholders: {OrderId}, {CustomerName}, {Items}</p>
+                                <textarea id="settingSmsTemplate" rows="3" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 bg-gray-50 p-2 border" disabled></textarea>
+                            </div>
+                            
+                            <div class="flex gap-4 pt-4 border-t border-gray-100">
+                                <button type="button" id="btnUnlockSettings" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors w-full flex items-center justify-center" onclick="unlockSettings()">
+                                    <i class="fas fa-lock mr-2"></i> Edit Mode
+                                </button>
+                                <button type="submit" id="btnSaveSettings" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-full flex items-center justify-center hidden">
+                                    <i class="fas fa-save mr-2"></i> Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
+
+                <!-- Admin Credentials Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center">
+                        <div class="bg-red-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-shield-alt text-red-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Security Credentials</h3>
+                            <p class="text-sm text-gray-500">Update admin login details</p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <form id="updateCredsForm" class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Current Password <span class="text-red-500">*</span></label>
+                                <input type="password" id="credOldPass" class="w-full border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring focus:ring-red-200 focus:ring-opacity-50 text-gray-700 p-2 border" placeholder="Verify it's you" required>
+                            </div>
+                            
+                            <div class="pt-4 border-t border-gray-100">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">New Username</label>
+                                <input type="text" id="credNewUser" class="w-full border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring focus:ring-red-200 focus:ring-opacity-50 text-gray-700 p-2 border" placeholder="Enter new username">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                                <input type="password" id="credNewPass" class="w-full border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring focus:ring-red-200 focus:ring-opacity-50 text-gray-700 p-2 border" placeholder="Enter new password">
+                            </div>
+
+                            <div class="flex gap-4 pt-4 border-t border-gray-100">
+                                <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors w-full flex items-center justify-center">
+                                    <i class="fas fa-key mr-2"></i> Update Credentials
+                                </button>
+                            </div>
+                            <p id="credMessage" class="text-sm hidden text-center mt-2"></p>
+                        </form>
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -289,11 +472,100 @@
             }
         }
 
+        function uiAlert(message) {
+            document.getElementById('uiAlertMessage').textContent = message;
+            document.getElementById('uiAlertModal').classList.remove('hidden');
+        }
+
+        function uiConfirm(message) {
+            return new Promise((resolve) => {
+                document.getElementById('uiConfirmMessage').textContent = message;
+                const modal = document.getElementById('uiConfirmModal');
+                modal.classList.remove('hidden');
+                
+                const okBtn = document.getElementById('uiConfirmOkBtn');
+                const cancelBtn = document.getElementById('uiConfirmCancelBtn');
+                
+                const cleanup = () => {
+                    modal.classList.add('hidden');
+                    okBtn.removeEventListener('click', onOk);
+                    cancelBtn.removeEventListener('click', onCancel);
+                };
+                
+                const onOk = () => { cleanup(); resolve(true); };
+                const onCancel = () => { cleanup(); resolve(false); };
+                
+                okBtn.addEventListener('click', onOk);
+                cancelBtn.addEventListener('click', onCancel);
+            });
+        }
+
+        function uiEditRecord(fields) {
+            return new Promise((resolve) => {
+                const container = document.getElementById('uiEditFormContainer');
+                container.innerHTML = '';
+                
+                // Build form fields
+                fields.forEach(f => {
+                    const div = document.createElement('div');
+                    let inputHtml = '';
+                    if (f.key === 'IsActive') {
+                        const isTrue = String(f.value).toLowerCase() === 'true' || f.value === 1 || f.value === '1';
+                        inputHtml = `
+                            <select id="editField_${f.key}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 p-2 border">
+                                <option value="1" ${isTrue ? 'selected' : ''}>Active (Yes)</option>
+                                <option value="0" ${!isTrue ? 'selected' : ''}>Inactive (No)</option>
+                            </select>
+                        `;
+                    } else {
+                        inputHtml = `<input type="text" id="editField_${f.key}" value="${f.value}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-700 p-2 border" />`;
+                    }
+                    div.innerHTML = `
+                        <label class="block text-sm font-medium text-gray-700 mb-1">${f.key}</label>
+                        ${inputHtml}
+                    `;
+                    container.appendChild(div);
+                });
+                
+                const modal = document.getElementById('uiEditModal');
+                modal.classList.remove('hidden');
+                
+                const okBtn = document.getElementById('uiEditOkBtn');
+                const cancelBtn = document.getElementById('uiEditCancelBtn');
+                
+                const cleanup = () => {
+                    modal.classList.add('hidden');
+                    okBtn.removeEventListener('click', onOk);
+                    cancelBtn.removeEventListener('click', onCancel);
+                };
+                
+                const onOk = () => {
+                    cleanup();
+                    const results = {};
+                    fields.forEach(f => {
+                        results[f.key] = document.getElementById(`editField_${f.key}`).value;
+                    });
+                    resolve(results);
+                };
+                
+                const onCancel = () => { cleanup(); resolve(null); };
+                
+                okBtn.addEventListener('click', onOk);
+                cancelBtn.addEventListener('click', onCancel);
+            });
+        }
+
         function logoutAdmin() {
-            if (confirm("Are you sure you want to log out?")) {
-                sessionStorage.removeItem('adminLoggedIn');
-                window.location.href = '/index.html';
-            }
+            document.getElementById('logoutModal').classList.remove('hidden');
+        }
+
+        function hideLogoutModal() {
+            document.getElementById('logoutModal').classList.add('hidden');
+        }
+
+        function confirmLogout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            window.location.href = '/index.html';
         }
 
         async function runSql(sqlQuery) {
@@ -306,25 +578,41 @@
         }
 
         async function deleteRow(tableName, primaryKeyCol, primaryKeyValue) {
-            if(!confirm(`Are you sure you want to delete ${primaryKeyValue} from ${tableName}?`)) return;
+            const confirmed = await uiConfirm(`Are you sure you want to delete ${primaryKeyValue} from ${tableName}?`);
+            if(!confirmed) return;
             const sql = `DELETE FROM ${tableName} WHERE ${primaryKeyCol} = '${primaryKeyValue}'`;
             const result = await runSql(sql);
             if(result.success) {
                 loadDatabase();
             } else {
-                alert('Failed to delete: ' + result.error);
+                uiAlert('Failed to delete: ' + result.error);
             }
         }
 
         async function editRow(tableName, primaryKeyCol, rowEncoded) {
             const row = JSON.parse(decodeURIComponent(rowEncoded));
-            let updates = [];
+            
+            // Prepare fields for the multi-field editor
+            let editableFields = [];
             for (let key in row) {
                 if (key === primaryKeyCol || key === 'CreatedAt' || key === 'PasswordHash' || key === 'OrderDate') continue;
-                let newVal = prompt(`Enter new value for ${key}:`, row[key] !== null ? row[key] : '');
-                if (newVal === null) return;
-                updates.push(`${key} = '${newVal.replace(/'/g, "''")}'`);
+                editableFields.push({ key: key, value: row[key] !== null ? row[key] : '' });
             }
+            
+            if (editableFields.length === 0) return;
+            
+            // Show multi-field modal
+            const newValues = await uiEditRecord(editableFields);
+            if (!newValues) return; // User cancelled
+            
+            let updates = [];
+            for (let key in newValues) {
+                let val = newValues[key];
+                if (val.toLowerCase() === 'true') val = '1';
+                else if (val.toLowerCase() === 'false') val = '0';
+                updates.push(`${key} = '${val.replace(/'/g, "''")}'`);
+            }
+            
             if (updates.length === 0) return;
             
             const sql = `UPDATE ${tableName} SET ${updates.join(', ')} WHERE ${primaryKeyCol} = '${row[primaryKeyCol]}'`;
@@ -332,8 +620,55 @@
             if (result.success) {
                 loadDatabase();
             } else {
-                alert('Failed to modify: ' + result.error);
+                uiAlert('Failed to modify: ' + result.error);
             }
+        }
+
+        function viewOrderDetails(rowEncoded) {
+            const row = JSON.parse(decodeURIComponent(rowEncoded));
+            document.getElementById('viewOrderTitle').textContent = `Order ${row.OrderId}`;
+            document.getElementById('viewOrderSubtitle').textContent = new Date(row.OrderDate).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+            document.getElementById('viewOrderCustomer').textContent = row.CustomerName;
+            document.getElementById('viewOrderPhone').textContent = row.CustomerPhone;
+            document.getElementById('viewOrderDriver').textContent = row.DriverPhone || 'Unassigned';
+            document.getElementById('viewOrderLocation').textContent = row.Location;
+            document.getElementById('viewOrderItems').textContent = row.Items;
+            
+            let statusHtml = row.Status;
+            if (row.Status === 'Delivered') statusHtml = '<span class="badge-success"><i class="fas fa-check-circle mr-1"></i>Delivered</span>';
+            else if (row.Status === 'Assigned') statusHtml = '<span class="badge-warning"><i class="fas fa-clock mr-1"></i>Assigned</span>';
+            document.getElementById('viewOrderStatus').innerHTML = statusHtml;
+            
+            const photoContainer = document.getElementById('viewOrderPhotoContainer');
+            if (row.DeliveryPhotoUrl) {
+                document.getElementById('viewOrderPhoto').src = row.DeliveryPhotoUrl;
+                document.getElementById('viewOrderPhotoLink').href = row.DeliveryPhotoUrl;
+                photoContainer.classList.remove('hidden');
+            } else {
+                photoContainer.classList.add('hidden');
+            }
+            
+            const billContainer = document.getElementById('viewOrderBillContainer');
+            if (row.BillPhotoUrl) {
+                document.getElementById('viewOrderBillPhoto').src = row.BillPhotoUrl;
+                document.getElementById('viewOrderBillLink').href = row.BillPhotoUrl;
+                billContainer.classList.remove('hidden');
+            } else {
+                billContainer.classList.add('hidden');
+            }
+            
+            // Build Actions
+            const actionsContainer = document.getElementById('viewOrderActions');
+            actionsContainer.innerHTML = `
+                <button onclick="document.getElementById('uiViewOrderModal').classList.add('hidden'); editRow('Orders', 'OrderId', '${rowEncoded}')" class="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center">
+                    <i class="fas fa-edit mr-2"></i> Edit Order
+                </button>
+                <button onclick="document.getElementById('uiViewOrderModal').classList.add('hidden'); deleteRow('Orders', 'OrderId', '${row.OrderId}')" class="px-4 py-2 bg-red-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-red-700 flex items-center">
+                    <i class="fas fa-trash mr-2"></i> Delete
+                </button>
+            `;
+            
+            document.getElementById('uiViewOrderModal').classList.remove('hidden');
         }
 
         function generateTableHtml(tableName, columns, rows, enableDelete = true) {
@@ -342,15 +677,20 @@
             const hiddenColumns = ['ShopOwnerPhone', 'PasswordHash'];
             const visibleCols = columns.filter(c => !hiddenColumns.includes(c));
 
-            let html = '<table><thead><tr>';
-            visibleCols.forEach(c => html += `<th>${c}</th>`);
-            if (enableDelete) html += `<th class="text-right">Actions</th>`;
+            let html = '<table class="min-w-full"><thead><tr>';
+            visibleCols.forEach(c => {
+                let headerText = c;
+                if (c === 'DeliveryPhotoUrl') headerText = 'Preview';
+                if (c === 'BillPhotoUrl') headerText = 'Bill';
+                html += `<th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-bold text-gray-500 uppercase tracking-wider">${headerText}</th>`;
+            });
+            if (enableDelete) html += `<th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-right text-xs leading-4 font-bold text-gray-500 uppercase tracking-wider">Actions</th>`;
             html += '</tr></thead><tbody>';
             
             const primaryKeyCol = columns[0];
 
             [...rows].reverse().forEach(row => {
-                html += '<tr>';
+                html += '<tr class="hover:bg-gray-50 transition-colors">';
                 visibleCols.forEach(c => {
                     let val = row[c] !== null ? row[c] : '';
                     
@@ -363,16 +703,26 @@
                         try { val = new Date(val).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}); } catch(e){}
                     }
                     else if (c.includes('Phone')) val = `<span class="text-primary font-medium"><i class="fas fa-phone-alt mr-1"></i>${val}</span>`;
-                    else if (c === 'DeliveryPhotoUrl' && val) {
+                    else if ((c === 'DeliveryPhotoUrl' || c === 'BillPhotoUrl') && val) {
                         val = `<a href="${val}" target="_blank"><img src="${val}" class="h-10 rounded shadow-sm border border-gray-200 hover:scale-110 transition-transform" alt="Photo" /></a>`;
                     }
-                    html += `<td>${val}</td>`;
+                    
+                    let tdClass = "px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-b border-gray-200";
+                    if (c === 'SmsTemplate' || c === 'Location' || c === 'Items') {
+                        tdClass = "px-6 py-4 whitespace-normal break-words text-sm text-gray-900 border-b border-gray-200 max-w-xs md:max-w-md";
+                    }
+                    html += `<td class="${tdClass}">${val}</td>`;
                 });
                 
                 if (enableDelete) {
                     const pkValue = row[primaryKeyCol];
                     const encodedRow = encodeURIComponent(JSON.stringify(row));
-                    html += `<td class="text-right">
+                    let viewBtnHtml = '';
+                    if (tableName === 'Orders') {
+                        viewBtnHtml = `<button onclick="viewOrderDetails('${encodedRow}')" class="btn-icon bg-indigo-50 text-indigo-600 hover:bg-indigo-100 mr-1" title="View Details"><i class="fas fa-eye text-sm"></i></button>`;
+                    }
+                    html += `<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium border-b border-gray-200">
+                        ${viewBtnHtml}
                         <button onclick="editRow('${tableName}', '${primaryKeyCol}', '${encodedRow}')" class="btn-icon btn-icon-edit mr-1" title="Edit"><i class="fas fa-pen text-sm"></i></button>
                         <button onclick="deleteRow('${tableName}', '${primaryKeyCol}', '${pkValue}')" class="btn-icon btn-icon-del" title="Delete"><i class="fas fa-trash text-sm"></i></button>
                     </td>`;
@@ -403,31 +753,97 @@
                 const response = await fetch('/api/admin/database');
                 const data = await response.json();
                 
-                let rawHtml = '';
+                let rawHtml = '<div class="space-y-8">';
                 data.forEach(table => {
-                    rawHtml += `<h5 class="mt-8 mb-4 font-bold text-primary">${table.tableName}</h5>`;
-                    rawHtml += generateTableHtml(table.tableName, table.columns, table.rows, false);
+                    rawHtml += `
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden w-full">
+                            <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center">
+                                <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-database text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900">${table.tableName} Table</h3>
+                                </div>
+                            </div>
+                            <div class="p-0 overflow-x-auto">
+                                ${generateTableHtml(table.tableName, table.columns, table.rows, false)}
+                            </div>
+                        </div>
+                    `;
                 });
+                rawHtml += '</div>';
                 document.getElementById('raw-tables-container').innerHTML = rawHtml;
 
                 const ordersTable = data.find(t => t.tableName === 'Orders');
                 if (ordersTable) {
+                    window.cachedOrdersTable = ordersTable;
                     document.getElementById('stat-total-orders').innerText = ordersTable.rows.length;
                     document.getElementById('stat-delivered').innerText = ordersTable.rows.filter(r => r.Status === 'Delivered').length;
                     document.getElementById('stat-active').innerText = ordersTable.rows.filter(r => r.Status === 'Assigned').length;
-                    document.getElementById('ordersGrid').innerHTML = generateTableHtml('Orders', ordersTable.columns, ordersTable.rows, true);
+                    applyOrderFilters(); // Call this instead of generateTableHtml directly to apply current filters
                 }
 
                 const driversTable = data.find(t => t.tableName === 'Drivers');
                 if (driversTable) {
                     document.getElementById('driversGrid').innerHTML = generateTableHtml('Drivers', driversTable.columns, driversTable.rows, true);
+                    
                     const dSelect = document.getElementById('newOrderDriver');
                     const curVal = dSelect.value;
                     dSelect.innerHTML = '<option value="">-- Select Driver --</option>';
-                    driversTable.rows.forEach(r => dSelect.innerHTML += `<option value="${r.PhoneNumber}">${r.FullName} (${r.PhoneNumber})</option>`);
+                    
+                    const fSelect = document.getElementById('filterOrderDriver');
+                    const fVal = fSelect.value;
+                    fSelect.innerHTML = '<option value="">All Drivers</option>';
+
+                    driversTable.rows.forEach(r => {
+                        const optHtml = `<option value="${r.PhoneNumber}">${r.FullName} (${r.PhoneNumber})</option>`;
+                        dSelect.innerHTML += optHtml;
+                        fSelect.innerHTML += optHtml;
+                    });
                     dSelect.value = curVal;
+                    fSelect.value = fVal;
                 }
             } catch (err) {}
+        }
+
+        function applyOrderFilters() {
+            if (!window.cachedOrdersTable) return;
+            
+            const search = document.getElementById('filterOrderSearch').value.toLowerCase();
+            const driver = document.getElementById('filterOrderDriver').value;
+            const dateStr = document.getElementById('filterOrderDate').value; // YYYY-MM-DD
+            
+            let filteredRows = window.cachedOrdersTable.rows.filter(row => {
+                let match = true;
+                
+                // Search
+                if (search) {
+                    const rowText = Object.values(row).join(' ').toLowerCase();
+                    if (!rowText.includes(search)) match = false;
+                }
+                
+                // Driver
+                if (driver && row.DriverPhone !== driver) {
+                    match = false;
+                }
+                
+                // Date
+                if (dateStr && row.OrderDate) {
+                    const orderDateStr = new Date(row.OrderDate).toISOString().split('T')[0];
+                    if (orderDateStr !== dateStr) match = false;
+                }
+                
+                return match;
+            });
+            
+            document.getElementById('ordersGrid').innerHTML = generateTableHtml('Orders', window.cachedOrdersTable.columns, filteredRows, true);
+        }
+
+        function clearOrderFilters() {
+            document.getElementById('filterOrderSearch').value = '';
+            document.getElementById('filterOrderDriver').value = '';
+            document.getElementById('filterOrderDate').value = '';
+            applyOrderFilters();
         }
 
         document.getElementById('updateSettingsForm').addEventListener('submit', async (e) => {
@@ -444,44 +860,369 @@
             }
         });
 
+        document.getElementById('updateCredsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const oldPass = document.getElementById('credOldPass').value;
+            const newUser = document.getElementById('credNewUser').value;
+            const newPass = document.getElementById('credNewPass').value;
+            const msgEl = document.getElementById('credMessage');
+            
+            const expectedPass = localStorage.getItem('adminPass') || 'admin123';
+            
+            if (oldPass !== expectedPass) {
+                msgEl.textContent = "Current password is incorrect!";
+                msgEl.className = "text-sm text-center mt-2 text-red-600 font-medium block";
+                return;
+            }
+
+            if (newUser) localStorage.setItem('adminUser', newUser);
+            if (newPass) localStorage.setItem('adminPass', newPass);
+
+            msgEl.textContent = "Credentials updated successfully!";
+            msgEl.className = "text-sm text-center mt-2 text-green-600 font-medium block";
+            document.getElementById('updateCredsForm').reset();
+            
+            setTimeout(() => {
+                msgEl.classList.add('hidden');
+            }, 3000);
+        });
+
+
         document.getElementById('createDriverForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('btnRegisterDriver');
+            const originalText = btn.innerHTML;
+            
+            // Loading state
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+            btn.disabled = true;
+
             const name = document.getElementById('newDriverName').value.replace(/'/g, "''");
             const phone = document.getElementById('newDriverPhone').value.replace(/'/g, "''");
             const password = document.getElementById('newDriverPassword').value.replace(/'/g, "''");
             const sql = `INSERT INTO Drivers (FullName, PhoneNumber, PasswordHash) VALUES ('${name}', '${phone}', '${password}')`;
+            
             const result = await runSql(sql);
+            
             if(result.success) {
+                // Success state animation
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i> Success!';
+                btn.style.backgroundColor = '#10B981'; // Tailwind green-500
+                
                 e.target.reset();
                 loadDatabase();
+                
+                // Revert after 2 seconds
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.backgroundColor = ''; // Revert to class style
+                    btn.disabled = false;
+                }, 2000);
+            } else {
+                // Revert on failure
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                uiAlert("Failed to add driver.");
             }
         });
 
+        // Product Builder Logic
+        const catalog = {
+            Cement: ["Ultratech", "Zuari", "Ramco", "KCP", "JSW"],
+            Steel: ["JR TMT", "Meenakshi", "Tata Tiscon"]
+        };
+        
+        let currentCategory = 'Cement';
+        let currentBrand = 'Ultratech';
+        let currentType = 'OPC'; // Default for cement
+        let currentSize = '8mm'; // Default for steel
+        let builtItems = [];
+        
+        function selCategory(cat) {
+            currentCategory = cat;
+            document.getElementById('tabCement').className = cat === 'Cement' ? 'font-bold text-blue-600 border-b-2 border-blue-600 pb-1 px-2 flex items-center' : 'font-bold text-gray-500 pb-1 px-2 hover:text-gray-700 flex items-center';
+            document.getElementById('tabSteel').className = cat === 'Steel' ? 'font-bold text-blue-600 border-b-2 border-blue-600 pb-1 px-2 flex items-center' : 'font-bold text-gray-500 pb-1 px-2 hover:text-gray-700 flex items-center';
+            
+            const typeSel = document.getElementById('typeSelection');
+            const sizeSel = document.getElementById('sizeSelection');
+            
+            if(cat === 'Cement') {
+                typeSel.classList.remove('hidden');
+                sizeSel.classList.add('hidden');
+                currentType = 'OPC';
+                selType('OPC');
+            } else {
+                typeSel.classList.add('hidden');
+                sizeSel.classList.remove('hidden');
+                currentSize = '8mm';
+                selSize('8mm');
+            }
+            
+            renderBrands();
+        }
+        
+        function renderBrands() {
+            const grid = document.getElementById('brandsGrid');
+            grid.innerHTML = '';
+            const brands = catalog[currentCategory];
+            if(!brands.includes(currentBrand)) currentBrand = brands[0];
+            
+            brands.forEach(b => {
+                const isSel = b === currentBrand;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `p-3 rounded-lg border text-sm font-bold flex flex-col items-center justify-center transition-all ${isSel ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`;
+                btn.onclick = () => { currentBrand = b; renderBrands(); };
+                
+                let iconHtml = currentCategory === 'Cement' ? '<i class="fas fa-cubes mb-2 text-xl opacity-50"></i>' : '<i class="fas fa-bars mb-2 text-xl opacity-50"></i>';
+                btn.innerHTML = `${iconHtml} <span class="truncate w-full text-center">${b}</span>`;
+                grid.appendChild(btn);
+            });
+        }
+        
+        function selType(t) {
+            currentType = t;
+            ['OPC','PPC','SUPER'].forEach(type => {
+                const el = document.getElementById('type' + type);
+                if (el) el.className = type === t ? 'px-4 py-2 border rounded-md text-sm font-bold bg-blue-600 text-white border-blue-600 shadow-sm' : 'px-4 py-2 border rounded-md text-sm font-medium bg-white text-gray-700 hover:bg-blue-50';
+            });
+        }
+        
+        function selSize(s) {
+            currentSize = s;
+            ['8mm','10mm','12mm','16mm','20mm','25mm','32mm'].forEach(sz => {
+                const el = document.getElementById('size' + sz);
+                if (el) el.className = sz === s ? 'px-4 py-2 border rounded-md text-sm font-bold bg-blue-600 text-white border-blue-600 shadow-sm' : 'px-4 py-2 border rounded-md text-sm font-medium bg-white text-gray-700 hover:bg-blue-50';
+            });
+        }
+        
+        function adjQty(val) {
+            const el = document.getElementById('builderQty');
+            let v = parseInt(el.value) + val;
+            if(v < 1) v = 1;
+            el.value = v;
+        }
+        
+        function addBuiltItem() {
+            const qty = document.getElementById('builderQty').value;
+            let str = `${qty}x ${currentBrand} ${currentCategory}`;
+            if(currentCategory === 'Cement' && currentType) str += ` (${currentType})`;
+            if(currentCategory === 'Steel' && currentSize) str += ` (${currentSize})`;
+            
+            builtItems.push(str);
+            renderBuiltItems();
+            document.getElementById('builderQty').value = 1;
+        }
+        
+        function removeBuiltItem(index) {
+            builtItems.splice(index, 1);
+            renderBuiltItems();
+        }
+        
+        function renderBuiltItems() {
+            const disp = document.getElementById('selectedItemsDisplay');
+            disp.innerHTML = '';
+            builtItems.forEach((item, idx) => {
+                disp.innerHTML += `<div class="bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-full text-sm font-medium flex items-center shadow-sm border border-indigo-200 mt-2">
+                    ${item}
+                    <button type="button" onclick="removeBuiltItem(${idx})" class="ml-2 text-indigo-400 hover:text-indigo-700 focus:outline-none"><i class="fas fa-times-circle text-base"></i></button>
+                </div>`;
+            });
+            document.getElementById('newOrderItems').value = builtItems.join(', ');
+        }
+        
+        // Initialize builder on load
+        selCategory('Cement');
+
         document.getElementById('createOrderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const payload = {
-                DriverPhone: document.getElementById('newOrderDriver').value,
-                ShopOwnerPhone: document.getElementById('settingShopPhone').value || '555-0200', 
-                CustomerName: document.getElementById('newOrderCustomer').value,
-                CustomerPhone: document.getElementById('newOrderPhone').value,
-                Location: document.getElementById('newOrderLocation').value,
-                Items: document.getElementById('newOrderItems').value
-            };
+            
+            // Removed item count validation as requested "these items should be optional"
+            
+            const btn = document.getElementById('btnDispatchOrder');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Dispatching...';
+            btn.disabled = true;
+
+            const fd = new FormData();
+            fd.append('DriverPhone', document.getElementById('newOrderDriver').value);
+            fd.append('ShopOwnerPhone', document.getElementById('settingShopPhone').value || '555-0200');
+            fd.append('CustomerName', document.getElementById('newOrderCustomer').value);
+            fd.append('CustomerPhone', document.getElementById('newOrderPhone').value);
+            fd.append('Location', document.getElementById('newOrderLocation').value);
+            fd.append('Items', document.getElementById('newOrderItems').value);
+            
+            const photoEl = document.getElementById('newOrderBillPhoto');
+            if (photoEl.files.length > 0) {
+                fd.append('billPhoto', photoEl.files[0]);
+            }
+
             const res = await fetch('/api/orders/create', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: fd
             });
+            
+            btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Dispatch Order';
+            btn.disabled = false;
+
             if(res.ok) {
                 e.target.reset();
+                builtItems = [];
+                renderBuiltItems();
+                document.getElementById('billPhotoLabel').innerText = 'Click to select bill image';
+                document.getElementById('billPhotoLabel').classList.remove('text-blue-600');
                 loadDatabase();
+                
+                // Show success UI animation
+                const originalClass = btn.className;
+                btn.className = 'bg-green-500 text-white px-8 py-2 rounded-lg font-medium transition-all duration-300 flex items-center';
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i> Success!';
+                setTimeout(() => {
+                    btn.className = originalClass;
+                    btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Dispatch Order';
+                }, 2000);
             } else {
-                alert("Failed to create order: " + await res.text());
+                uiAlert("Failed to create order: " + await res.text());
             }
         });
 
         loadDatabase();
         setInterval(loadDatabase, 10000);
     </script>
+    
+    <!-- UI Confirm Modal -->
+    <div id="uiConfirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4 transform transition-all">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2">Are you sure?</h3>
+                <p id="uiConfirmMessage" class="text-sm text-gray-500 mb-6"></p>
+            </div>
+            <div class="flex flex-row space-x-3">
+                <button id="uiConfirmCancelBtn" class="w-1/2 inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">Cancel</button>
+                <button id="uiConfirmOkBtn" class="w-1/2 inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-yellow-600 text-base font-medium text-white hover:bg-yellow-700 focus:outline-none">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI Alert Modal -->
+    <div id="uiAlertModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4 transform transition-all">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <i class="fas fa-info-circle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2">Notification</h3>
+                <p id="uiAlertMessage" class="text-sm text-gray-500 mb-6"></p>
+            </div>
+            <div class="flex flex-row justify-center">
+                <button onclick="document.getElementById('uiAlertModal').classList.add('hidden')" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI Edit Modal (Multi-field) -->
+    <div id="uiEditModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 transform transition-all">
+            <div class="text-center mb-4">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                    <i class="fas fa-edit text-blue-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2">Edit Record</h3>
+                <p class="text-sm text-gray-500">Update the fields below.</p>
+            </div>
+            <div id="uiEditFormContainer" class="space-y-4 mb-6 max-h-64 overflow-y-auto px-1">
+                <!-- Inputs injected dynamically here -->
+            </div>
+            <div class="flex flex-row space-x-3">
+                <button id="uiEditCancelBtn" class="w-1/2 inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">Cancel</button>
+                <button id="uiEditOkBtn" class="w-1/2 inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI View Order Modal -->
+    <div id="uiViewOrderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg mx-4 transform transition-all">
+            <div class="flex justify-between items-start mb-4 border-b pb-4">
+                <div class="flex items-center">
+                    <div class="bg-indigo-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-file-invoice text-indigo-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900" id="viewOrderTitle">Order Details</h3>
+                        <p class="text-sm text-gray-500" id="viewOrderSubtitle">Date</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('uiViewOrderModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 mb-6 text-sm text-gray-700">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-3 rounded border">
+                        <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Customer</span>
+                        <div id="viewOrderCustomer" class="font-medium text-gray-900"></div>
+                        <div id="viewOrderPhone" class="text-gray-600 mt-1"></div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded border">
+                        <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Assigned Driver</span>
+                        <div id="viewOrderDriver" class="font-medium text-gray-900"></div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-3 rounded border">
+                    <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Delivery Address</span>
+                    <div id="viewOrderLocation"></div>
+                </div>
+                <div class="bg-gray-50 p-3 rounded border">
+                    <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Items</span>
+                    <div id="viewOrderItems"></div>
+                </div>
+                <div class="bg-gray-50 p-3 rounded border flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+                    <div>
+                        <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Status</span>
+                        <div id="viewOrderStatus"></div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div id="viewOrderBillContainer" class="hidden text-center">
+                            <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Bill</span>
+                            <a id="viewOrderBillLink" target="_blank"><img id="viewOrderBillPhoto" class="h-12 w-12 object-cover rounded border hover:scale-110 transition-transform" /></a>
+                        </div>
+                        <div id="viewOrderPhotoContainer" class="hidden text-center">
+                            <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Delivery</span>
+                            <a id="viewOrderPhotoLink" target="_blank"><img id="viewOrderPhoto" class="h-12 w-12 object-cover rounded border hover:scale-110 transition-transform" /></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 border-t pt-4" id="viewOrderActions">
+                <!-- Action buttons will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div id="logoutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4 transform transition-all">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <i class="fas fa-sign-out-alt text-red-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2">Ready to Leave?</h3>
+                <p class="text-sm text-gray-500 mb-6">Are you sure you want to log out of the admin dashboard?</p>
+            </div>
+            <div class="flex flex-row space-x-3">
+                <button onclick="hideLogoutModal()" class="w-1/2 inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">
+                    Cancel
+                </button>
+                <button onclick="confirmLogout()" class="w-1/2 inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

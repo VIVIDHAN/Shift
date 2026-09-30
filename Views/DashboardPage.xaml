@@ -4,75 +4,211 @@
              x:Class="DeliveryApp.Views.DashboardPage"
              xmlns:models="clr-namespace:DeliveryApp.Models"
              xmlns:services="clr-namespace:DeliveryApp.Services"
-             Title="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[DashboardTitle]}"
-             BackgroundColor="#F3F4F6">
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="#103FBD">
              
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Logout]}" Clicked="OnLogoutClicked" Order="Primary" />
-    </ContentPage.ToolbarItems>
+    <Grid>
+        <!-- Blue Header Background -->
+        <Image Source="dasboardheaderimagebg.png" Aspect="AspectFill" VerticalOptions="Start" HeightRequest="240" />
+        
+        <Grid RowDefinitions="220, *">
+            <!-- Header Content -->
+            <Grid Grid.Row="0" RowDefinitions="Auto, *, Auto" Padding="20, 50, 20, 20">
+                <!-- Top Row (Title, Dots) -->
+                <Grid Grid.Row="0" ColumnDefinitions="*, Auto" ColumnSpacing="15">
+                    <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="0">
+                        <Label Text="My Routes" TextColor="White" FontSize="22" FontAttributes="Bold" />
+                        <Label Text="Today's delivery route" TextColor="#E0F2FE" FontSize="14" />
+                    </VerticalStackLayout>
+                    
+                    <Label Grid.Column="1" Text="&#xe5d4;" FontFamily="MaterialIcons" FontSize="28" TextColor="White" VerticalOptions="Center" HorizontalOptions="End">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLogoutClicked"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </Grid>
 
-    <Grid RowDefinitions="Auto,*">
-        <VerticalStackLayout Padding="20,20,20,20" BackgroundColor="#1E3A8A" Grid.Row="0">
-            <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[TodaysDeliveries]}" TextColor="White" FontSize="26" FontAttributes="Bold"/>
-            <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[CompleteRoutesSafely]}" TextColor="#BFDBFE" FontSize="15" Margin="0,5,0,0"/>
-        </VerticalStackLayout>
-
-        <CollectionView x:Name="OrdersCollection" Grid.Row="1" Margin="15,0,15,15">
-            <CollectionView.EmptyView>
-                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="15" Margin="0,100,0,0">
-                    <!-- Since we want to avoid emojis based on earlier requests, let's use a Material Icon or nice text -->
-                    <Label Text="&#xebcc;" FontFamily="MaterialIcons" FontSize="80" TextColor="#9CA3AF" HorizontalOptions="Center" />
-                    <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[AllCaughtUp]}" FontSize="22" FontAttributes="Bold" TextColor="#1F2937" HorizontalOptions="Center" />
-                    <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[NoActiveOrders]}" FontSize="16" TextColor="#6B7280" HorizontalTextAlignment="Center" HorizontalOptions="Center" Margin="20,0" />
-                    <Button Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Refresh]}" Clicked="OnRefreshClicked" BackgroundColor="#E5E7EB" TextColor="#4B5563" FontAttributes="Bold" CornerRadius="8" WidthRequest="160" HeightRequest="45" Margin="0,20,0,0"/>
-                </VerticalStackLayout>
-            </CollectionView.EmptyView>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:Order">
-                    <Frame Margin="0,8" Padding="0" CornerRadius="15" HasShadow="True" BorderColor="Transparent" BackgroundColor="White">
-                        <Grid RowDefinitions="Auto,Auto,Auto" Padding="20">
-                            
-                            <!-- Header -->
-                            <Grid ColumnDefinitions="*,Auto" Grid.Row="0" Margin="0,0,0,15">
-                                <Label Text="{Binding OrderId, StringFormat='#{0}'}" FontAttributes="Bold" FontSize="18" TextColor="#111827" Grid.Column="0"/>
-                                <Frame Grid.Column="1" BackgroundColor="#FEF3C7" CornerRadius="8" Padding="8,4" HasShadow="False" BorderColor="Transparent">
-                                    <Label Text="Assigned" TextColor="#D97706" FontSize="12" FontAttributes="Bold"/>
-                                </Frame>
+                <!-- Today's Deliveries / Progress -->
+                <VerticalStackLayout Grid.Row="2" Spacing="4" Margin="0,15,0,10">
+                    <Label Text="Today's Deliveries" TextColor="White" FontSize="30" FontAttributes="Bold" />
+                    <Label x:Name="HeaderProgressText" Text="0 of 0 deliveries completed" TextColor="#E0F2FE" FontSize="15" />
+                    
+                    <!-- Progress Bar -->
+                    <Grid ColumnDefinitions="*, Auto" ColumnSpacing="15" Margin="0, 8, 0, 0">
+                        <Border Grid.Column="0" HeightRequest="8" BackgroundColor="#1E3A8A" StrokeThickness="0" StrokeShape="RoundRectangle 4" VerticalOptions="Center">
+                            <Grid x:Name="HeaderProgressGrid" ColumnDefinitions="0*, 100*">
+                                <BoxView Grid.Column="0" BackgroundColor="#22C55E" />
                             </Grid>
-                            
-                            <!-- Details -->
-                            <VerticalStackLayout Grid.Row="1" Spacing="12">
-                                <Grid ColumnDefinitions="30,*">
-                                    <Label Text="&#xe7fd;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="16" Grid.Column="0" VerticalOptions="Center"/>
-                                    <Label Text="{Binding CustomerName}" FontSize="15" TextColor="#4B5563" Grid.Column="1" VerticalOptions="Center"/>
-                                </Grid>
-                                
-                                <Grid ColumnDefinitions="30,*">
-                                    <Label Text="&#xe1a1;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="16" Grid.Column="0" VerticalOptions="Center"/>
-                                    <Label Text="{Binding Items}" FontSize="15" TextColor="#4B5563" Grid.Column="1" VerticalOptions="Center"/>
-                                </Grid>
-                                
-                                <Grid ColumnDefinitions="30,*">
-                                    <Label Text="&#xe0c8;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="16" Grid.Column="0" VerticalOptions="Center"/>
-                                    <Label Text="{Binding Location}" FontSize="15" TextColor="#4B5563" Grid.Column="1" VerticalOptions="Center"/>
-                                </Grid>
+                        </Border>
+                        <Label x:Name="HeaderProgressPercentage" Grid.Column="1" Text="0%" TextColor="White" FontSize="14" FontAttributes="Bold" VerticalOptions="Center"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Grid>
+            
+            <!-- Main Content Container (Rounded Top) -->
+            <Border Grid.Row="1" BackgroundColor="#F3F4F6" StrokeThickness="0" StrokeShape="RoundRectangle 20,20,0,0">
+                <Grid RowDefinitions="Auto, *">
+                    
+                    <!-- Segmented Control -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*, *, *" ColumnSpacing="10" Padding="20, 20, 20, 10">
+                        <!-- All -->
+                        <Border x:Name="TabAllBorder" Grid.Column="0" BackgroundColor="#1E4ED8" StrokeThickness="0" StrokeShape="RoundRectangle 20" HeightRequest="36">
+                            <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                                <Label x:Name="TabAllLabel" Text="All" TextColor="White" FontSize="14" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Border x:Name="TabAllBadgeBorder" BackgroundColor="White" StrokeThickness="0" StrokeShape="RoundRectangle 10" WidthRequest="20" HeightRequest="20" VerticalOptions="Center">
+                                    <Label x:Name="TabAllBadgeLabel" Text="4" TextColor="#1E4ED8" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+                            </HorizontalStackLayout>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTabAllClicked"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+                        <!-- Pending -->
+                        <Border x:Name="TabPendingBorder" Grid.Column="1" BackgroundColor="#E5E7EB" StrokeThickness="0" StrokeShape="RoundRectangle 20" HeightRequest="36">
+                            <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                                <Label x:Name="TabPendingLabel" Text="Pending" TextColor="#4B5563" FontSize="14" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Border x:Name="TabPendingBadgeBorder" BackgroundColor="#D1D5DB" StrokeThickness="0" StrokeShape="RoundRectangle 10" WidthRequest="20" HeightRequest="20" VerticalOptions="Center">
+                                    <Label x:Name="TabPendingBadgeLabel" Text="3" TextColor="#4B5563" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+                            </HorizontalStackLayout>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTabPendingClicked"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+                        <!-- Completed -->
+                        <Border x:Name="TabCompletedBorder" Grid.Column="2" BackgroundColor="#E5E7EB" StrokeThickness="0" StrokeShape="RoundRectangle 20" HeightRequest="36">
+                            <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                                <Label x:Name="TabCompletedLabel" Text="Completed" TextColor="#4B5563" FontSize="14" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Border x:Name="TabCompletedBadgeBorder" BackgroundColor="#D1D5DB" StrokeThickness="0" StrokeShape="RoundRectangle 10" WidthRequest="20" HeightRequest="20" VerticalOptions="Center">
+                                    <Label x:Name="TabCompletedBadgeLabel" Text="1" TextColor="#4B5563" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+                            </HorizontalStackLayout>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTabCompletedClicked"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+                    </Grid>
+                    
+                    <!-- Collection View -->
+                    <CollectionView x:Name="OrdersCollection" Grid.Row="1" Margin="15, 0, 15, 20">
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="15" Margin="0,100,0,0">
+                                <Label Text="&#xebcc;" FontFamily="MaterialIcons" FontSize="80" TextColor="#9CA3AF" HorizontalOptions="Center" />
+                                <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[AllCaughtUp]}" FontSize="22" FontAttributes="Bold" TextColor="#1F2937" HorizontalOptions="Center" />
+                                <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[NoActiveOrders]}" FontSize="16" TextColor="#6B7280" HorizontalTextAlignment="Center" HorizontalOptions="Center" Margin="20,0" />
+                                <Button Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Refresh]}" Clicked="OnRefreshClicked" BackgroundColor="#E5E7EB" TextColor="#4B5563" FontAttributes="Bold" CornerRadius="8" WidthRequest="160" HeightRequest="45" Margin="0,20,0,0"/>
                             </VerticalStackLayout>
-                            
-                            <!-- Action -->
-                            <Button Grid.Row="2" 
-                                    Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[ReachedLocation]}" 
-                                    Command="{Binding Source={x:RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ReachedLocationCommand}"
-                                    CommandParameter="{Binding .}"
-                                    BackgroundColor="#1E3A8A"
-                                    TextColor="White"
-                                    FontAttributes="Bold"
-                                    CornerRadius="10"
-                                    HeightRequest="50"
-                                    Margin="0,20,0,0"/>
-                        </Grid>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Order">
+                                <Border Margin="0, 5, 0, 15" BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 16">
+                                    <Grid RowDefinitions="Auto, Auto, Auto" Padding="15">
+                                        <!-- Header -->
+                                        <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0,0,0,15">
+                                            <VerticalStackLayout Grid.Column="0">
+                                                <Label Text="{Binding OrderId, StringFormat='#{0}'}" FontAttributes="Bold" FontSize="18" TextColor="#111827"/>
+                                                <!-- Mock assigned time as requested by design -->
+                                                <Label Text="Assigned at 10:30 AM" FontSize="12" TextColor="#6B7280"/>
+                                            </VerticalStackLayout>
+                                            
+                                            <!-- Status Badge -->
+                                            <Border Grid.Column="1" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10, 5" VerticalOptions="Start">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="BackgroundColor" Value="#FEF3C7" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger TargetType="Border" Binding="{Binding Status}" Value="Delivered">
+                                                                <Setter Property="BackgroundColor" Value="#D1FAE5" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <HorizontalStackLayout Spacing="5" VerticalOptions="Center">
+                                                    <BoxView WidthRequest="6" HeightRequest="6" CornerRadius="3" VerticalOptions="Center">
+                                                        <BoxView.Style>
+                                                            <Style TargetType="BoxView">
+                                                                <Setter Property="Color" Value="#F59E0B" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger TargetType="BoxView" Binding="{Binding Status}" Value="Delivered">
+                                                                        <Setter Property="Color" Value="#10B981" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </BoxView.Style>
+                                                    </BoxView>
+                                                    <Label Text="{Binding Status}" FontSize="12" FontAttributes="Bold" VerticalOptions="Center">
+                                                        <Label.Style>
+                                                            <Style TargetType="Label">
+                                                                <Setter Property="TextColor" Value="#D97706" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger TargetType="Label" Binding="{Binding Status}" Value="Delivered">
+                                                                        <Setter Property="TextColor" Value="#059669" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Label.Style>
+                                                    </Label>
+                                                </HorizontalStackLayout>
+                                            </Border>
+                                        </Grid>
+                                        
+                                        <!-- Details -->
+                                        <Grid Grid.Row="1" RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="40, *" RowSpacing="15" Margin="0,0,0,15">
+                                            <!-- Customer -->
+                                            <Label Grid.Row="0" Grid.Column="0" Text="&#xe7fd;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="24" VerticalOptions="Center" HorizontalOptions="Center"/>
+                                            <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*, Auto">
+                                                <VerticalStackLayout Grid.Column="0">
+                                                    <Label Text="Customer" FontSize="12" TextColor="#6B7280"/>
+                                                    <Label Text="{Binding CustomerName}" FontSize="15" FontAttributes="Bold" TextColor="#111827"/>
+                                                </VerticalStackLayout>
+                                                <!-- Phone Button -->
+                                                <Border Grid.Column="1" BackgroundColor="#EFF6FF" StrokeThickness="0" StrokeShape="RoundRectangle 18" WidthRequest="36" HeightRequest="36">
+                                                    <Label Text="&#xe0cd;" FontFamily="MaterialIcons" TextColor="#3B82F6" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                </Border>
+                                            </Grid>
+                                            
+                                            <!-- Package -->
+                                            <Label Grid.Row="1" Grid.Column="0" Text="&#xebcc;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="24" VerticalOptions="Start" HorizontalOptions="Center" Margin="0,5,0,0"/>
+                                            <VerticalStackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Center">
+                                                <Label Text="Package" FontSize="12" TextColor="#6B7280"/>
+                                                <Label Text="{Binding Items}" FontSize="15" FontAttributes="Bold" TextColor="#111827" LineBreakMode="WordWrap"/>
+                                            </VerticalStackLayout>
+                                            
+                                            <!-- Address -->
+                                            <Label Grid.Row="2" Grid.Column="0" Text="&#xe55f;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="24" VerticalOptions="Start" HorizontalOptions="Center" Margin="0,5,0,0"/>
+                                            <VerticalStackLayout Grid.Row="2" Grid.Column="1" Spacing="10">
+                                                <VerticalStackLayout>
+                                                    <Label Text="Delivery Address" FontSize="12" TextColor="#6B7280"/>
+                                                    <Label Text="{Binding Location}" FontSize="14" TextColor="#111827" LineBreakMode="WordWrap"/>
+                                                </VerticalStackLayout>
+                                                
+                                                <!-- Bill Preview -->
+                                                <Border IsVisible="{Binding HasBillPhoto}" BackgroundColor="#F9FAFB" Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 8" HeightRequest="120" Margin="0,5,0,0">
+                                                    <Image Source="{Binding BillPhotoUrl}" Aspect="AspectFill" />
+                                                </Border>
+                                            </VerticalStackLayout>
+                                        </Grid>
+                                        
+                                        <!-- Actions -->
+                                        <Grid Grid.Row="2" IsVisible="{Binding IsAssigned}">
+                                            <!-- Reached Location -->
+                                            <Border BackgroundColor="#1E4ED8" StrokeThickness="0" StrokeShape="RoundRectangle 8" HeightRequest="46">
+                                                <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                                                    <Label Text="&#xe55f;" FontFamily="MaterialIcons" TextColor="White" FontSize="20" VerticalOptions="Center"/>
+                                                    <Label Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[ReachedLocation]}" TextColor="White" FontSize="14" FontAttributes="Bold" VerticalOptions="Center"/>
+                                                </HorizontalStackLayout>
+                                                <Border.GestureRecognizers>
+                                                    <TapGestureRecognizer Command="{Binding Source={x:RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ReachedLocationCommand}" CommandParameter="{Binding .}"/>
+                                                </Border.GestureRecognizers>
+                                            </Border>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </ContentPage>

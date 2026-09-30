@@ -91,8 +91,32 @@ namespace DeliveryApi.Controllers
                 await connection.OpenAsync();
                 using var command = new MySqlCommand(request.Sql, connection);
                 
-                int rowsAffected = await command.ExecuteNonQueryAsync();
-                return Ok(new { success = true, rowsAffected });
+                if (request.Sql.TrimStart().StartsWith("SELECT", System.StringComparison.OrdinalIgnoreCase) || 
+                    request.Sql.TrimStart().StartsWith("SHOW", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    var rows = new List<Dictionary<string, object>>();
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        var cols = new List<string>();
+                        for (int i = 0; i < reader.FieldCount; i++) cols.Add(reader.GetName(i));
+
+                        while (await reader.ReadAsync())
+                        {
+                            var row = new Dictionary<string, object>();
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                row[cols[i]] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                            }
+                            rows.Add(row);
+                        }
+                    }
+                    return Ok(new { success = true, rows = rows });
+                }
+                else
+                {
+                    int rowsAffected = await command.ExecuteNonQueryAsync();
+                    return Ok(new { success = true, rowsAffected = rowsAffected });
+                }
             }
             catch (System.Exception ex)
             {
