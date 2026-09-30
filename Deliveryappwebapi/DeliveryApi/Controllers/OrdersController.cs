@@ -50,23 +50,38 @@ namespace DeliveryApi.Controllers
 
             order.Status = "Delivered";
 
-            // Save photo if uploaded
+            // Upload photo to AWS S3 if provided
             if (photo != null && photo.Length > 0)
             {
-                var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadsDir))
-                    Directory.CreateDirectory(uploadsDir);
-
-                var fileName = $"{orderId}_{DateTime.Now.Ticks}.jpg";
-                var filePath = Path.Combine(uploadsDir, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                try
                 {
-                    await photo.CopyToAsync(stream);
-                }
+                    string bucketName = "shiftappimagesfolder";
+                    var fileName = $"{orderId}_{DateTime.Now.Ticks}.jpg";
 
-                // Generate public URL relative to the server
-                order.DeliveryPhotoUrl = $"/uploads/{fileName}";
+                    // Using AWSSDK.S3 (Ensure your AWS credentials are fixed in ~/.aws/credentials)
+                    using var amazonS3Client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.APSouth1);
+                    
+                    using var newMemoryStream = new MemoryStream();
+                    await photo.CopyToAsync(newMemoryStream);
+                    
+                    var uploadRequest = new Amazon.S3.Model.PutObjectRequest
+                    {
+                        InputStream = newMemoryStream,
+                        BucketName = bucketName,
+                        Key = fileName,
+                        ContentType = "image/jpeg"
+                    };
+                    
+                    await amazonS3Client.PutObjectAsync(uploadRequest);
+
+                    // Generate the public S3 URL
+                    order.DeliveryPhotoUrl = $"https://{bucketName}.s3.ap-south-1.amazonaws.com/{fileName}";
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"AWS S3 Upload Failed: {ex.Message}");
+                    // We can still mark as delivered even if photo fails, or return error
+                }
             }
 
             await _context.SaveChangesAsync();
