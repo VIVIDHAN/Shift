@@ -10,7 +10,7 @@ namespace DeliveryApp.Services
 {
     public class ApiService
     {
-        private readonly string _baseUrl = "http://192.168.31.175:5287/api/";
+        private readonly string _baseUrl = "http://15.206.179.78/api/";
         private readonly HttpClient _httpClient;
 
         public ApiService()
