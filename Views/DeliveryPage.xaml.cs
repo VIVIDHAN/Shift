@@ -39,6 +39,17 @@ public partial class DeliveryPage : ContentPage
         }
     }
 
+    private async void OnCallCustomer(object sender, TappedEventArgs e)
+    {
+        if (_currentOrder != null && !string.IsNullOrWhiteSpace(_currentOrder.CustomerPhone))
+        {
+            if (PhoneDialer.Default.IsSupported)
+            {
+                PhoneDialer.Default.Open(_currentOrder.CustomerPhone);
+            }
+        }
+    }
+
     private async void OnClickPhotoClicked(object sender, EventArgs e)
     {
         try

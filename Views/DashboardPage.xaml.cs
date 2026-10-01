@@ -9,6 +9,7 @@ public partial class DashboardPage : ContentPage
     private List<Order> _allOrdersCache;
     public ObservableCollection<Order> Orders { get; set; }
     public ICommand ReachedLocationCommand { get; set; }
+    public ICommand CallCustomerCommand { get; set; }
 
     public DashboardPage()
     {
@@ -17,6 +18,7 @@ public partial class DashboardPage : ContentPage
         _allOrdersCache = new List<Order>();
         Orders = new ObservableCollection<Order>();
         ReachedLocationCommand = new Command<Order>(async (order) => await OnReachedLocation(order));
+        CallCustomerCommand = new Command<Order>(OnCallCustomer);
         BindingContext = this;
         OrdersCollection.ItemsSource = Orders;
     }
@@ -72,7 +74,7 @@ public partial class DashboardPage : ContentPage
         int total = _allOrdersCache.Count;
         int completed = _allOrdersCache.Count(o => o.Status == "Delivered");
         
-        HeaderProgressText.Text = $"{completed} of {total} deliveries completed";
+        HeaderProgressText.Text = $"{completed} of {total} completed";
         
         if (total > 0)
         {
@@ -96,22 +98,25 @@ public partial class DashboardPage : ContentPage
                                  Border b2, Label l2, Border bb2, Label bl2)
     {
         // Selected
-        selectedBorder.BackgroundColor = Color.FromArgb("#1E4ED8");
-        selectedLabel.TextColor = Colors.White;
-        selectedBadgeBorder.BackgroundColor = Colors.White;
+        selectedBorder.BackgroundColor = Color.FromArgb("#EFF6FF");
+        selectedLabel.TextColor = Color.FromArgb("#1E4ED8");
+        selectedLabel.FontAttributes = FontAttributes.Bold;
+        selectedBadgeBorder.BackgroundColor = Color.FromArgb("#DBEAFE");
         selectedBadgeLabel.TextColor = Color.FromArgb("#1E4ED8");
 
         // Unselected 1
-        b1.BackgroundColor = Color.FromArgb("#E5E7EB");
-        l1.TextColor = Color.FromArgb("#4B5563");
-        bb1.BackgroundColor = Color.FromArgb("#D1D5DB");
-        bl1.TextColor = Color.FromArgb("#4B5563");
+        b1.BackgroundColor = Colors.Transparent;
+        l1.TextColor = Color.FromArgb("#6B7280");
+        l1.FontAttributes = FontAttributes.None;
+        bb1.BackgroundColor = Color.FromArgb("#F3F4F6");
+        bl1.TextColor = Color.FromArgb("#6B7280");
 
         // Unselected 2
-        b2.BackgroundColor = Color.FromArgb("#E5E7EB");
-        l2.TextColor = Color.FromArgb("#4B5563");
-        bb2.BackgroundColor = Color.FromArgb("#D1D5DB");
-        bl2.TextColor = Color.FromArgb("#4B5563");
+        b2.BackgroundColor = Colors.Transparent;
+        l2.TextColor = Color.FromArgb("#6B7280");
+        l2.FontAttributes = FontAttributes.None;
+        bb2.BackgroundColor = Color.FromArgb("#F3F4F6");
+        bl2.TextColor = Color.FromArgb("#6B7280");
     }
 
     private void OnTabAllClicked(object sender, TappedEventArgs e)
@@ -173,6 +178,22 @@ public partial class DashboardPage : ContentPage
             navPage.BarBackgroundColor = Color.FromArgb("#1E3A8A");
             navPage.BarTextColor = Colors.White;
             Application.Current.MainPage = navPage;
+        }
+    }
+
+    private void OnCallCustomer(Order order)
+    {
+        if (order != null && !string.IsNullOrEmpty(order.CustomerPhone))
+        {
+            try
+            {
+                if (PhoneDialer.Default.IsSupported)
+                    PhoneDialer.Default.Open(order.CustomerPhone);
+            }
+            catch (Exception)
+            {
+                DisplayAlert("Error", "Could not open phone dialer.", "OK");
+            }
         }
     }
 }

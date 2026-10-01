@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:services="clr-namespace:DeliveryApp.Services"
              x:Class="DeliveryApp.Views.DeliveryPage"
+             NavigationPage.HasNavigationBar="False"
              Shell.NavBarIsVisible="False"
              BackgroundColor="#F3F4F6">
     <Grid RowDefinitions="Auto, *">
@@ -48,8 +49,8 @@
                         <!-- Header -->
                         <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,15">
                             <VerticalStackLayout Grid.Column="0">
-                                <Label Text="{Binding OrderId, StringFormat='#ORD-{0}'}" FontSize="22" FontAttributes="Bold" TextColor="#111827"/>
-                                <Label Text="Assigned at 10:30 AM" FontSize="12" TextColor="#6B7280"/>
+                                <Label Text="{Binding OrderId, StringFormat='#{0}'}" FontSize="22" FontAttributes="Bold" TextColor="#111827"/>
+                                <Label Text="{Binding OrderDate, StringFormat='Assigned at {0:h:mm tt}'}" FontSize="12" TextColor="#6B7280"/>
                             </VerticalStackLayout>
                             
                             <!-- Status Badge -->
@@ -64,22 +65,26 @@
                         <!-- Details -->
                         <Grid RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="40, *" RowSpacing="15">
                             <!-- Customer -->
-                            <Label Grid.Row="0" Grid.Column="0" Text="&#xe7fd;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="24" VerticalOptions="Start" HorizontalOptions="Center" Margin="0,5,0,0"/>
-                            <Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*, Auto">
-                                <VerticalStackLayout Grid.Column="0">
-                                    <Label Text="Customer" FontSize="12" TextColor="#6B7280"/>
-                                    <Label Text="{Binding CustomerName}" FontSize="15" FontAttributes="Bold" TextColor="#111827"/>
+                            <Label Grid.Row="0" Grid.Column="0" Text="&#xe7fd;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="24" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            <Grid Grid.Row="0" Grid.Column="1">
+                                <VerticalStackLayout>
+                                    <Label Text="Customer" FontSize="13" TextColor="#4B5563" FontAttributes="Bold"/>
+                                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                        <Label Text="{Binding CustomerName}" FontSize="15" FontAttributes="Bold" TextColor="#111827" VerticalOptions="Center"/>
+                                        <Border BackgroundColor="#EFF6FF" StrokeThickness="0" StrokeShape="RoundRectangle 18" WidthRequest="36" HeightRequest="36" VerticalOptions="Center">
+                                            <Label Text="&#xe0cd;" FontFamily="MaterialIcons" TextColor="#3B82F6" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnCallCustomer" />
+                                            </Border.GestureRecognizers>
+                                        </Border>
+                                    </HorizontalStackLayout>
                                 </VerticalStackLayout>
-                                <!-- Phone Button -->
-                                <Border Grid.Column="1" BackgroundColor="#EFF6FF" StrokeThickness="0" StrokeShape="RoundRectangle 18" WidthRequest="36" HeightRequest="36">
-                                    <Label Text="&#xe0cd;" FontFamily="MaterialIcons" TextColor="#3B82F6" FontSize="20" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                </Border>
                             </Grid>
                             
                             <!-- Package -->
-                            <Label Grid.Row="1" Grid.Column="0" Text="&#xebcc;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="24" VerticalOptions="Start" HorizontalOptions="Center" Margin="0,5,0,0"/>
+                            <Label Grid.Row="1" Grid.Column="0" Text="&#xe1a1;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="24" VerticalOptions="Start" HorizontalOptions="Center" Margin="0,5,0,0"/>
                             <VerticalStackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Center">
-                                <Label Text="Items" FontSize="12" TextColor="#6B7280"/>
+                                <Label Text="Package" FontSize="13" TextColor="#4B5563" FontAttributes="Bold"/>
                                 <Label Text="{Binding Items}" FontSize="15" FontAttributes="Bold" TextColor="#111827" LineBreakMode="WordWrap"/>
                             </VerticalStackLayout>
                             
@@ -87,8 +92,8 @@
                             <Label Grid.Row="2" Grid.Column="0" Text="&#xe55f;" FontFamily="MaterialIcons" TextColor="#4B5563" FontSize="24" VerticalOptions="Start" HorizontalOptions="Center" Margin="0,5,0,0"/>
                             <Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="*, Auto">
                                 <VerticalStackLayout Grid.Column="0">
-                                    <Label Text="Delivery Address" FontSize="12" TextColor="#6B7280"/>
-                                    <Label Text="{Binding Location}" FontSize="14" TextColor="#111827" LineBreakMode="WordWrap"/>
+                                    <Label Text="Delivery Address" FontSize="13" TextColor="#4B5563" FontAttributes="Bold"/>
+                                    <Label Text="{Binding Location}" FontSize="14" FontAttributes="Bold" TextColor="#111827" LineBreakMode="WordWrap"/>
                                 </VerticalStackLayout>
                                 
                                 <Border Grid.Column="1" BackgroundColor="#EFF6FF" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="12,6" VerticalOptions="End">
@@ -131,7 +136,7 @@
                 </Border>
 
                 <!-- Action Buttons -->
-                <VerticalStackLayout Spacing="10" Margin="0,10,0,20">
+                <VerticalStackLayout Spacing="10" Margin="0,10,0,40">
                     <Button x:Name="TakePhotoBtn"
                             Text="Take Photo of Delivery" 
                             ImageSource="{FontImageSource FontFamily=MaterialIcons, Glyph=&#xe412;, Color=White, Size=20}" 

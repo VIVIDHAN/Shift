@@ -1,0 +1,4 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  XAML source generation is enabled (MauiXamlInflator=SourceGen). This generates C# code from XAML at compile time for better performance. To disable, remove the MauiXamlInflator line from your .csproj file (reverts to configuration-based defaults: Runtime in Debug, XamlC in Release).
+  DeliveryApp -> /Users/vividhan/Desktop/Shunmugarai Mobile App/DeliveryApp/bin/Debug/net10.0-android/DeliveryApp.dll
