@@ -652,8 +652,14 @@
             
             const photoContainer = document.getElementById('viewOrderPhotoContainer');
             if (row.DeliveryPhotoUrl) {
-                document.getElementById('viewOrderPhoto').src = row.DeliveryPhotoUrl;
-                document.getElementById('viewOrderPhotoLink').href = row.DeliveryPhotoUrl;
+                let urls = row.DeliveryPhotoUrl.split(',');
+                // Just show the first photo in the mini-view, or generate multiple
+                let html = '<span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Delivery</span><div class="flex space-x-1">';
+                urls.forEach(u => {
+                    html += `<a href="${u}" target="_blank"><img src="${u}" class="h-12 w-12 object-cover rounded border hover:scale-110 transition-transform" /></a>`;
+                });
+                html += '</div>';
+                photoContainer.innerHTML = html;
                 photoContainer.classList.remove('hidden');
             } else {
                 photoContainer.classList.add('hidden');
@@ -714,7 +720,12 @@
                         try { val = new Date(val).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}); } catch(e){}
                     }
                     else if (c.includes('Phone')) val = `<span class="text-primary font-medium"><i class="fas fa-phone-alt mr-1"></i>${val}</span>`;
-                    else if ((c === 'DeliveryPhotoUrl' || c === 'BillPhotoUrl') && val) {
+                    else if (c === 'DeliveryPhotoUrl' && val) {
+                        let urls = val.split(',');
+                        let imgs = urls.map(u => `<a href="${u}" target="_blank"><img src="${u}" class="h-10 inline-block mr-1 rounded shadow-sm border border-gray-200 hover:scale-110 transition-transform" alt="Photo" /></a>`).join('');
+                        val = `<div class="flex">${imgs}</div>`;
+                    }
+                    else if (c === 'BillPhotoUrl' && val) {
                         val = `<a href="${val}" target="_blank"><img src="${val}" class="h-10 rounded shadow-sm border border-gray-200 hover:scale-110 transition-transform" alt="Photo" /></a>`;
                     }
                     
