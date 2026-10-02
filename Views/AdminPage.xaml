@@ -1,101 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-            xmlns:models="clr-namespace:DeliveryApp.Models"
-            x:Class="DeliveryApp.Views.AdminPage"
-            Title="Admin ERP"
-            BarBackgroundColor="#1E3A8A"
-            BarTextColor="White"
-            SelectedTabColor="#10B981"
-            UnselectedTabColor="#9CA3AF">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DeliveryApp.Views.AdminPage"
+             Title="Admin ERP"
+             BackgroundColor="White">
 
-    <!-- 1. ORDERS TAB -->
-    <ContentPage Title="Orders">
-        <Grid RowDefinitions="Auto,*">
-            <VerticalStackLayout Padding="20,20,20,10" BackgroundColor="#1E3A8A" Grid.Row="0">
-                <Label Text="Orders Dashboard" TextColor="White" FontSize="22" FontAttributes="Bold"/>
-                <Button Text="Create New Order" Clicked="OnCreateOrderClicked" BackgroundColor="#10B981" TextColor="White" FontAttributes="Bold" CornerRadius="8" HeightRequest="40" Margin="0,15,0,0"/>
-            </VerticalStackLayout>
-            <RefreshView x:Name="OrdersRefreshView" Refreshing="OnRefreshOrders" Grid.Row="1" BackgroundColor="#F3F4F6">
-                <CollectionView x:Name="AllOrdersCollection" Margin="15,10,15,0">
-                    <CollectionView.EmptyView>
-                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="15" Margin="0,100,0,0">
-                            <Label Text="No Orders Found" FontSize="18" TextColor="#6B7280" HorizontalOptions="Center" />
-                        </VerticalStackLayout>
-                    </CollectionView.EmptyView>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:Order">
-                            <Border Margin="0,8" Padding="15" StrokeShape="RoundRectangle 12" Stroke="Transparent" BackgroundColor="White">
-                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
-                                    <Label Text="{Binding OrderId}" FontAttributes="Bold" FontSize="16" TextColor="#111827" Grid.Row="0" Grid.Column="0"/>
-                                    <Label Text="{Binding Status}" TextColor="#D97706" FontSize="12" FontAttributes="Bold" Grid.Row="0" Grid.Column="1" HorizontalOptions="End"/>
-                                    
-                                    <Label Text="{Binding CustomerName}" FontSize="14" TextColor="#4B5563" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,5,0,0"/>
-                                    <Label Text="{Binding Location}" FontSize="12" TextColor="#6B7280" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"/>
-                                    <Label Text="{Binding DriverPhone, StringFormat='Driver: {0}'}" FontSize="12" TextColor="#10B981" FontAttributes="Bold" Grid.Row="3" Grid.Column="0" Margin="0,5,0,0"/>
-                                    
-                                    <Button Text="Delete" CommandParameter="{Binding OrderId}" Clicked="OnDeleteOrderClicked" BackgroundColor="#EF4444" TextColor="White" FontSize="10" HeightRequest="30" WidthRequest="60" CornerRadius="6" Grid.Row="3" Grid.Column="1" HorizontalOptions="End" VerticalOptions="End"/>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </RefreshView>
-        </Grid>
-    </ContentPage>
+    <Grid>
+        <WebView x:Name="ErpWebView" Source="http://15.206.179.78/erp.html" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" />
+    </Grid>
 
-    <!-- 2. DRIVERS TAB -->
-    <ContentPage Title="Drivers">
-        <Grid RowDefinitions="Auto,*">
-            <VerticalStackLayout Padding="20,20,20,10" BackgroundColor="#1E3A8A" Grid.Row="0">
-                <Label Text="Manage Drivers" TextColor="White" FontSize="22" FontAttributes="Bold"/>
-                <Button Text="Add New Driver" Clicked="OnAddDriverClicked" BackgroundColor="#10B981" TextColor="White" FontAttributes="Bold" CornerRadius="8" HeightRequest="40" Margin="0,15,0,0"/>
-            </VerticalStackLayout>
-            <RefreshView x:Name="DriversRefreshView" Refreshing="OnRefreshDrivers" Grid.Row="1" BackgroundColor="#F3F4F6">
-                <CollectionView x:Name="AllDriversCollection" Margin="15,10,15,0">
-                    <CollectionView.EmptyView>
-                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="15" Margin="0,100,0,0">
-                            <Label Text="No Drivers Found" FontSize="18" TextColor="#6B7280" HorizontalOptions="Center" />
-                        </VerticalStackLayout>
-                    </CollectionView.EmptyView>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:Driver">
-                            <Border Margin="0,8" Padding="15" StrokeShape="RoundRectangle 12" Stroke="Transparent" BackgroundColor="White">
-                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
-                                    <Label Text="{Binding FullName}" FontAttributes="Bold" FontSize="16" TextColor="#111827" Grid.Row="0" Grid.Column="0"/>
-                                    <Label Text="{Binding PhoneNumber}" FontSize="14" TextColor="#6B7280" Grid.Row="1" Grid.Column="0" Margin="0,5,0,0"/>
-                                    
-                                    <Button Text="Delete" CommandParameter="{Binding PhoneNumber}" Clicked="OnDeleteDriverClicked" BackgroundColor="#EF4444" TextColor="White" FontSize="10" HeightRequest="30" WidthRequest="60" CornerRadius="6" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" HorizontalOptions="End" VerticalOptions="Center"/>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </RefreshView>
-        </Grid>
-    </ContentPage>
-
-    <!-- 3. SETTINGS TAB -->
-    <ContentPage Title="Settings">
-        <ScrollView BackgroundColor="#F3F4F6">
-            <VerticalStackLayout Padding="20" Spacing="15">
-                <Label Text="Shop Profile Settings" FontSize="22" FontAttributes="Bold" TextColor="#111827" Margin="0,0,0,10"/>
-                
-                <Label Text="Shop Name" FontSize="14" TextColor="#4B5563" FontAttributes="Bold"/>
-                <Entry x:Name="ShopNameEntry" Placeholder="Enter Shop Name" BackgroundColor="White"/>
-                
-                <Label Text="Shop Phone" FontSize="14" TextColor="#4B5563" FontAttributes="Bold"/>
-                <Entry x:Name="ShopPhoneEntry" Placeholder="e.g. 555-0200" Keyboard="Telephone" BackgroundColor="White"/>
-                
-                <Label Text="Address" FontSize="14" TextColor="#4B5563" FontAttributes="Bold"/>
-                <Entry x:Name="ShopAddressEntry" Placeholder="Shop Address" BackgroundColor="White"/>
-                
-                <Label Text="SMS Template" FontSize="14" TextColor="#4B5563" FontAttributes="Bold"/>
-                <Editor x:Name="SmsTemplateEditor" Placeholder="Your order {OrderId} from {ShopName} is out for delivery." HeightRequest="100" BackgroundColor="White"/>
-                
-                <Button Text="Save Settings" Clicked="OnSaveSettingsClicked" BackgroundColor="#1E3A8A" TextColor="White" FontAttributes="Bold" CornerRadius="8" HeightRequest="50" Margin="0,20,0,0"/>
-            </VerticalStackLayout>
-        </ScrollView>
-    </ContentPage>
-
-</TabbedPage>
+</ContentPage>

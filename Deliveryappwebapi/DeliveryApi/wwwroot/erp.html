@@ -239,7 +239,7 @@
                                         <i class="fas fa-file-invoice text-4xl text-gray-400 mb-2"></i>
                                         <p class="text-sm text-gray-600 font-medium" id="billPhotoLabel">Click to select bill image</p>
                                     </div>
-                                    <input type="file" id="newOrderBillPhoto" accept="image/*" class="hidden" required onchange="document.getElementById('billPhotoLabel').innerText = this.files[0] ? this.files[0].name : 'Click to select bill image'; document.getElementById('billPhotoLabel').classList.add('text-blue-600')">
+                                    <input type="file" id="newOrderBillPhoto" accept="image/*" capture="environment" class="hidden" required onchange="document.getElementById('billPhotoLabel').innerText = this.files[0] ? this.files[0].name : 'Click to select bill image'; document.getElementById('billPhotoLabel').classList.add('text-blue-600')">
                                 </div>
                             </div>
 
