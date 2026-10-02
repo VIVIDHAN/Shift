@@ -104,6 +104,7 @@ namespace DeliveryApi.Controllers
             newOrder.OrderId = "ORD-" + new Random().Next(1000, 9999);
             newOrder.Status = "Assigned";
             newOrder.OrderDate = DateTime.Now;
+            newOrder.Items = newOrder.Items ?? "";
 
             // Upload bill photo to AWS S3 if provided
             if (billPhoto != null && billPhoto.Length > 0)
