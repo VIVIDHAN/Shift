@@ -58,7 +58,7 @@ namespace DeliveryApp.Services
             return new List<Order>();
         }
 
-        public async Task<bool> CompleteDeliveryAsync(string orderId, string driverPhone, byte[] photoData = null)
+        public async Task<bool> CompleteDeliveryAsync(string orderId, string driverPhone, List<byte[]> photosData = null)
         {
             try
             {
@@ -67,11 +67,14 @@ namespace DeliveryApp.Services
                 content.Add(new StringContent(orderId), "orderId");
                 content.Add(new StringContent(driverPhone), "driverPhone");
                 
-                if (photoData != null)
+                if (photosData != null)
                 {
-                    var imageContent = new ByteArrayContent(photoData);
-                    imageContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-                    content.Add(imageContent, "photo", "delivery.jpg");
+                    for (int i = 0; i < photosData.Count; i++)
+                    {
+                        var imageContent = new ByteArrayContent(photosData[i]);
+                        imageContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+                        content.Add(imageContent, "photos", $"delivery_{i}.jpg");
+                    }
                 }
 
                 var response = await _httpClient.PostAsync(_baseUrl + "orders/complete", content);

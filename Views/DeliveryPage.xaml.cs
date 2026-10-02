@@ -102,7 +102,7 @@ public partial class DeliveryPage : ContentPage
 
     private async void OnSubmitClicked(object sender, EventArgs e)
     {
-        if (_photoResult == null)
+        if (_photoResults.Count == 0)
         {
             await DisplayAlert("Photo Required", "Please click a photo of the delivered item before submitting.", "OK");
             return;
@@ -114,19 +114,19 @@ public partial class DeliveryPage : ContentPage
 
         try
         {
-            byte[] photoData = null;
-            if (_photoResult != null)
+            List<byte[]> photosData = new List<byte[]>();
+            foreach (var photo in _photoResults)
             {
-                using var stream = await _photoResult.OpenReadAsync();
+                using var stream = await photo.OpenReadAsync();
                 using var memoryStream = new MemoryStream();
                 await stream.CopyToAsync(memoryStream);
-                photoData = memoryStream.ToArray();
+                photosData.Add(memoryStream.ToArray());
             }
 
             // 1. Update Database via our new Local API
             var apiService = new ApiService();
             string driverPhone = Preferences.Get("DriverPhone", "Unknown");
-            bool dbSuccess = await apiService.CompleteDeliveryAsync(_currentOrder.OrderId, driverPhone, photoData);
+            bool dbSuccess = await apiService.CompleteDeliveryAsync(_currentOrder.OrderId, driverPhone, photosData);
             
             if (!dbSuccess)
             {
