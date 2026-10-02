@@ -469,6 +469,7 @@
                 loadSettings();
             } else {
                 loadDatabase();
+                loadSettings();
             }
         }
 
@@ -584,6 +585,7 @@
             const result = await runSql(sql);
             if(result.success) {
                 loadDatabase();
+                loadSettings();
             } else {
                 uiAlert('Failed to delete: ' + result.error);
             }
@@ -619,6 +621,7 @@
             const result = await runSql(sql);
             if (result.success) {
                 loadDatabase();
+                loadSettings();
             } else {
                 uiAlert('Failed to modify: ' + result.error);
             }
@@ -856,6 +859,7 @@
             const result = await runSql(sql);
             if(result.success) {
                 loadDatabase();
+                loadSettings();
                 lockSettings();
             }
         });
@@ -911,6 +915,7 @@
                 
                 e.target.reset();
                 loadDatabase();
+                loadSettings();
                 
                 // Revert after 2 seconds
                 setTimeout(() => {
@@ -1071,6 +1076,7 @@
                 document.getElementById('billPhotoLabel').innerText = 'Click to select bill image';
                 document.getElementById('billPhotoLabel').classList.remove('text-blue-600');
                 loadDatabase();
+                loadSettings();
                 
                 // Show success UI animation
                 const originalClass = btn.className;
@@ -1086,6 +1092,7 @@
         });
 
         loadDatabase();
+                loadSettings();
         setInterval(loadDatabase, 10000);
     </script>
     
