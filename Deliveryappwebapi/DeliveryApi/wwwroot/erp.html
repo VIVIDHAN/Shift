@@ -654,9 +654,9 @@
             if (row.DeliveryPhotoUrl) {
                 let urls = row.DeliveryPhotoUrl.split(',');
                 // Just show the first photo in the mini-view, or generate multiple
-                let html = '<span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Delivery</span><div class="flex space-x-1">';
+                let html = '<span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Delivery Photos (Click to enlarge)</span><div class="flex flex-wrap gap-2">';
                 urls.forEach(u => {
-                    html += `<a href="${u}" target="_blank"><img src="${u}" class="h-12 w-12 object-cover rounded border hover:scale-110 transition-transform" /></a>`;
+                    html += `<a href="${u}" target="_blank"><img src="${u}" class="h-32 w-32 object-cover rounded-lg border-2 border-gray-200 shadow-sm hover:scale-105 transition-transform" /></a>`;
                 });
                 html += '</div>';
                 photoContainer.innerHTML = html;
@@ -707,7 +707,10 @@
             const primaryKeyCol = columns[0];
 
             [...rows].reverse().forEach(row => {
-                html += '<tr class="hover:bg-gray-50 transition-colors">';
+                const encodedRowData = encodeURIComponent(JSON.stringify(row));
+                const trClass = tableName === 'Orders' ? 'hover:bg-blue-50 transition-colors cursor-pointer' : 'hover:bg-gray-50 transition-colors';
+                const trClick = tableName === 'Orders' ? ` onclick="viewOrderDetails('${encodedRowData}')"` : '';
+                html += `<tr class="${trClass}"${trClick}>`;
                 visibleCols.forEach(c => {
                     let val = row[c] !== null ? row[c] : '';
                     
@@ -722,11 +725,11 @@
                     else if (c.includes('Phone')) val = `<span class="text-primary font-medium"><i class="fas fa-phone-alt mr-1"></i>${val}</span>`;
                     else if (c === 'DeliveryPhotoUrl' && val) {
                         let urls = val.split(',');
-                        let imgs = urls.map(u => `<a href="${u}" target="_blank"><img src="${u}" class="h-10 inline-block mr-1 rounded shadow-sm border border-gray-200 hover:scale-110 transition-transform" alt="Photo" /></a>`).join('');
+                        let imgs = urls.map(u => `<a href="${u}" target="_blank" onclick="event.stopPropagation()"><img src="${u}" class="h-10 inline-block mr-1 rounded shadow-sm border border-gray-200 hover:scale-110 transition-transform" alt="Photo" /></a>`).join('');
                         val = `<div class="flex">${imgs}</div>`;
                     }
                     else if (c === 'BillPhotoUrl' && val) {
-                        val = `<a href="${val}" target="_blank"><img src="${val}" class="h-10 rounded shadow-sm border border-gray-200 hover:scale-110 transition-transform" alt="Photo" /></a>`;
+                        val = `<a href="${val}" target="_blank" onclick="event.stopPropagation()"><img src="${val}" class="h-10 rounded shadow-sm border border-gray-200 hover:scale-110 transition-transform" alt="Photo" /></a>`;
                     }
                     
                     let tdClass = "px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-b border-gray-200";
@@ -1213,8 +1216,8 @@
                     </div>
                     <div class="flex gap-4">
                         <div id="viewOrderBillContainer" class="hidden text-center">
-                            <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Bill</span>
-                            <a id="viewOrderBillLink" target="_blank"><img id="viewOrderBillPhoto" class="h-12 w-12 object-cover rounded border hover:scale-110 transition-transform" /></a>
+                            <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Bill Photo</span>
+                            <a id="viewOrderBillLink" target="_blank"><img id="viewOrderBillPhoto" class="h-32 w-32 object-cover rounded-lg border-2 border-gray-200 shadow-sm hover:scale-105 transition-transform" /></a>
                         </div>
                         <div id="viewOrderPhotoContainer" class="hidden text-center">
                             <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Delivery</span>
