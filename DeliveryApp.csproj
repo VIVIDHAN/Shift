@@ -74,4 +74,12 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
 	</ItemGroup>
 
+
+	<PropertyGroup Condition="$(TargetFramework).Contains('-android') and '$(Configuration)' == 'Release'">
+		<AndroidKeyStore>True</AndroidKeyStore>
+		<AndroidSigningKeyStore>shiftapp.keystore</AndroidSigningKeyStore>
+		<AndroidSigningKeyAlias>shiftalias</AndroidSigningKeyAlias>
+		<AndroidSigningKeyPass>shift2026</AndroidSigningKeyPass>
+		<AndroidSigningStorePass>shift2026</AndroidSigningStorePass>
+	</PropertyGroup>
 </Project>
