@@ -36,7 +36,7 @@ namespace DeliveryApi.Controllers
 
         // POST: api/orders/complete
         [HttpPost("complete")]
-        public async Task<IActionResult> CompleteDelivery([FromForm] string action, [FromForm] string driverPhone, [FromForm] string orderId, IFormFile photo)
+        public async Task<IActionResult> CompleteDelivery([FromForm] string action, [FromForm] string driverPhone, [FromForm] string orderId, List<IFormFile> photos)
         {
             if (action != "completeDelivery" || string.IsNullOrEmpty(driverPhone) || string.IsNullOrEmpty(orderId))
             {
@@ -51,33 +51,39 @@ namespace DeliveryApi.Controllers
 
             order.Status = "Delivered";
 
-            // Upload photo to AWS S3 if provided
-            if (photo != null && photo.Length > 0)
+            // Upload photos to AWS S3 if provided
+            if (photos != null && photos.Count > 0)
             {
                 try
                 {
                     string bucketName = "shiftapp-images-store";
-                    var fileName = $"{orderId}_{DateTime.Now.Ticks}.jpg";
-
-                    // Using AWSSDK.S3 (Ensure your AWS credentials are fixed in ~/.aws/credentials)
                     using var amazonS3Client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.APSouth1);
+                    var urls = new List<string>();
                     
-                    using var newMemoryStream = new MemoryStream();
-                    await photo.CopyToAsync(newMemoryStream);
-                    newMemoryStream.Position = 0;
-                    
-                    var uploadRequest = new Amazon.S3.Model.PutObjectRequest
+                    for(int i = 0; i < photos.Count; i++)
                     {
-                        InputStream = newMemoryStream,
-                        BucketName = bucketName,
-                        Key = fileName,
-                        ContentType = "image/jpeg"
-                    };
-                    
-                    await amazonS3Client.PutObjectAsync(uploadRequest);
-
-                    // Generate the public S3 URL
-                    order.DeliveryPhotoUrl = $"https://{bucketName}.s3.ap-south-1.amazonaws.com/{fileName}";
+                        var photoFile = photos[i];
+                        if (photoFile.Length > 0)
+                        {
+                            var fileName = $"{orderId}_{DateTime.Now.Ticks}_{i}.jpg";
+                            using var newMemoryStream = new MemoryStream();
+                            await photoFile.CopyToAsync(newMemoryStream);
+                            newMemoryStream.Position = 0;
+                            
+                            var uploadRequest = new Amazon.S3.Model.PutObjectRequest
+                            {
+                                InputStream = newMemoryStream,
+                                BucketName = bucketName,
+                                Key = fileName,
+                                ContentType = "image/jpeg"
+                            };
+                            
+                            await amazonS3Client.PutObjectAsync(uploadRequest);
+                            urls.Add($"https://{bucketName}.s3.ap-south-1.amazonaws.com/{fileName}");
+                        }
+                    }
+                    if(urls.Count > 0)
+                        order.DeliveryPhotoUrl = string.Join(",", urls);
                 }
                 catch (Exception ex)
                 {

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Database Viewer</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        h1 { color: #2c3e50; text-align: center; }
+        h2 { color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 5px; margin-top: 30px; text-transform: capitalize; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #3498db; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .loading { text-align: center; font-size: 1.2rem; color: #7f8c8d; margin-top: 50px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Dynamic MySQL Database Viewer</h1>
+        
+        <div id="content" class="loading">Scanning all database tables dynamically...</div>
+    </div>
+
+    <script>
+        async function fetchDatabase() {
+            try {
+                const response = await fetch('/api/admin/database');
+                const data = await response.json(); // This is now a dynamic array of all tables
+                
+                let html = '';
+
+                if (data.length === 0) {
+                    html = '<p>No tables found in this database.</p>';
+                }
+
+                data.forEach(table => {
+                    html += `<h2>🗄️ ${table.tableName}</h2>`;
+                    
+                    if (table.rows.length === 0) {
+                        html += '<p><i>This table is empty.</i></p>';
+                        return; // continue to next table
+                    }
+
+                    html += '<table><tr>';
+                    // Render Columns dynamically
+                    table.columns.forEach(col => {
+                        html += `<th>${col}</th>`;
+                    });
+                    html += '</tr>';
+
+                    // Render Rows dynamically
+                    table.rows.forEach(row => {
+                        html += '<tr>';
+                        table.columns.forEach(col => {
+                            let val = row[col];
+                            if (val === null) val = '<i>NULL</i>';
+                            else if (typeof val === 'object') val = JSON.stringify(val);
+                            html += `<td>${val}</td>`;
+                        });
+                        html += '</tr>';
+                    });
+                    
+                    html += '</table>';
+                });
+
+                document.getElementById('content').innerHTML = html;
+            } catch (error) {
+                document.getElementById('content').innerHTML = `<p style="color:red">Failed to load database. Is the API running?</p>`;
+                console.error(error);
+            }
+        }
+
+        // Fetch data on page load
+        fetchDatabase();
+    </script>
+</body>
+</html>

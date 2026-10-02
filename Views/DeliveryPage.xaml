@@ -131,7 +131,7 @@
                             <Label Text="No photo captured yet" TextColor="#4B5563" FontSize="15" FontAttributes="Bold" HorizontalOptions="Center"/>
                             <Label Text="Take a clear photo of the delivered items&#x0a;at the customer's location." TextColor="#9CA3AF" FontSize="12" HorizontalTextAlignment="Center" HorizontalOptions="Center"/>
                         </VerticalStackLayout>
-                        <Image x:Name="CapturedImage" Aspect="AspectFill" IsVisible="false"/>
+                        <ScrollView Orientation="Horizontal" IsVisible="false" x:Name="PhotosScrollView"><HorizontalStackLayout x:Name="PhotosContainer" Spacing="10" Padding="10" /></ScrollView>
                     </Grid>
                 </Border>
 

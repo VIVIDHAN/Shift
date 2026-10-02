@@ -7,7 +7,7 @@ namespace DeliveryApp.Views;
 public partial class DeliveryPage : ContentPage
 {
     private Order _currentOrder;
-    private FileResult _photoResult;
+    private List<FileResult> _photoResults = new List<FileResult>();
 
     public DeliveryPage(Order order)
     {
@@ -54,15 +54,31 @@ public partial class DeliveryPage : ContentPage
     {
         try
         {
+            if (_photoResults.Count >= 3) {
+                await DisplayAlert("Limit Reached", "You can only upload up to 3 photos.", "OK");
+                return;
+            }
+
             if (MediaPicker.Default.IsCaptureSupported)
             {
-                _photoResult = await MediaPicker.Default.CapturePhotoAsync();
+                var photo = await MediaPicker.Default.CapturePhotoAsync();
 
-                if (_photoResult != null)
+                if (photo != null)
                 {
-                    var stream = await _photoResult.OpenReadAsync();
-                    CapturedImage.Source = ImageSource.FromStream(() => stream);
-                    CapturedImage.IsVisible = true;
+                    _photoResults.Add(photo);
+                    
+                    var stream = await photo.OpenReadAsync();
+                    
+                    var img = new Image {
+                        Source = ImageSource.FromStream(() => stream),
+                        Aspect = Aspect.AspectFill,
+                        WidthRequest = 120,
+                        HeightRequest = 180,
+                        Margin = new Thickness(0, 0, 10, 0)
+                    };
+                    
+                    PhotosContainer.Children.Add(img);
+                    PhotosScrollView.IsVisible = true;
                     PhotoPlaceholder.IsVisible = false;
                     PhotoBorder.StrokeDashArray = null; // Solid border once captured
                     
@@ -70,7 +86,7 @@ public partial class DeliveryPage : ContentPage
                     SubmitBtn.IsEnabled = true;
                     SubmitBtn.BackgroundColor = Color.FromArgb("#10B981"); // Green
                     SubmitHelpText.IsVisible = false;
-                    TakePhotoBtn.Text = "Retake Photo";
+                    TakePhotoBtn.Text = _photoResults.Count < 3 ? "Take Another Photo" : "Max 3 Photos Reached";
                 }
             }
             else
@@ -160,7 +176,8 @@ public partial class DeliveryPage : ContentPage
                         {
                             if (!string.IsNullOrEmpty(number))
                             {
-                                smsManager.SendTextMessage(number, null, finalMsg, null, null);
+                                var parts = smsManager.DivideMessage(finalMsg);
+                                smsManager.SendMultipartTextMessage(number, null, parts, null, null);
                             }
                         }
                         await DisplayAlert("Sent", "SMS sent successfully in the background.", "OK");
