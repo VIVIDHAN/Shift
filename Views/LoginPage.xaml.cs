@@ -65,6 +65,11 @@ namespace DeliveryApp.Views
             TogglePasswordLabel.Text = PasswordEntry.IsPassword ? "\ue8f4" : "\ue8f5";
         }
 
+        private async void OnAdminLoginClicked(object sender, EventArgs e)
+        {
+            await Navigation.PushAsync(new AdminPage());
+        }
+
         private async void OnLoginClicked(object sender, EventArgs e)
         {
             var phone = PhoneEntry.Text;

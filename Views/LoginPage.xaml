@@ -99,6 +99,13 @@
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
                     
+                    <!-- Admin Login Link -->
+                    <Label Text="Admin Login" TextColor="#1E4ED8" FontAttributes="Bold" HorizontalOptions="Center" Margin="0,20,0,0">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnAdminLoginClicked"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+
                 </VerticalStackLayout>
                 
             </VerticalStackLayout>
